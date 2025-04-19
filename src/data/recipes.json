@@ -1,0 +1,121 @@
+{
+  "recipes": [
+    {
+      "id": "1",
+      "title": "Classic Margherita Pizza",
+      "description": "A simple yet delicious traditional Italian pizza with fresh basil, mozzarella, and tomato sauce.",
+      "yield": "1 large pizza",
+      "prepTime": 30,
+      "cookTime": 15,
+      "totalTime": 45,
+      "ingredients": [
+        {
+          "name": "pizza dough",
+          "quantity": 1,
+          "unit": "ball",
+          "notes": "store-bought or homemade"
+        },
+        {
+          "name": "tomato sauce",
+          "quantity": 0.5,
+          "unit": "cup"
+        },
+        {
+          "name": "fresh mozzarella",
+          "quantity": 8,
+          "unit": "oz",
+          "notes": "sliced"
+        },
+        {
+          "name": "fresh basil leaves",
+          "quantity": 10,
+          "unit": "leaves"
+        }
+      ],
+      "instructions": [
+        "Preheat oven to 475°F (245°C).",
+        "Roll out the pizza dough on a floured surface.",
+        "Spread tomato sauce evenly over the dough.",
+        "Arrange mozzarella slices on top.",
+        "Bake for 12-15 minutes until crust is golden.",
+        "Top with fresh basil leaves before serving."
+      ],
+      "dietary": {
+        "vegetarian": true,
+        "vegan": false,
+        "glutenFree": false,
+        "dairyFree": false,
+        "lowCarb": false,
+        "highProtein": false
+      },
+      "nutrition": {
+        "calories": 1200,
+        "protein": 45,
+        "fat": 35,
+        "fiber": 5,
+        "carbohydrates": 180,
+        "sugar": 8
+      },
+      "tags": ["Italian", "Pizza", "Vegetarian"]
+    },
+    {
+      "id": "2",
+      "title": "Quinoa Buddha Bowl",
+      "description": "A nutritious and colorful bowl packed with protein-rich quinoa, roasted vegetables, and a tahini dressing.",
+      "yield": "2 servings",
+      "prepTime": 20,
+      "cookTime": 25,
+      "totalTime": 45,
+      "ingredients": [
+        {
+          "name": "quinoa",
+          "quantity": 1,
+          "unit": "cup",
+          "notes": "uncooked"
+        },
+        {
+          "name": "sweet potato",
+          "quantity": 1,
+          "unit": "large",
+          "notes": "diced"
+        },
+        {
+          "name": "chickpeas",
+          "quantity": 1,
+          "unit": "can",
+          "notes": "drained and rinsed"
+        },
+        {
+          "name": "avocado",
+          "quantity": 1,
+          "unit": "medium",
+          "notes": "sliced"
+        }
+      ],
+      "instructions": [
+        "Cook quinoa according to package instructions.",
+        "Roast sweet potato cubes at 400°F (200°C) for 20 minutes.",
+        "Heat chickpeas in a pan with olive oil and spices.",
+        "Assemble bowl with quinoa, roasted sweet potato, chickpeas, and avocado.",
+        "Drizzle with tahini dressing."
+      ],
+      "dietary": {
+        "vegetarian": true,
+        "vegan": true,
+        "glutenFree": true,
+        "dairyFree": true,
+        "lowCarb": false,
+        "highProtein": true
+      },
+      "nutrition": {
+        "calories": 650,
+        "protein": 25,
+        "fat": 30,
+        "fiber": 15,
+        "carbohydrates": 80,
+        "sugar": 10
+      },
+      "tags": ["Vegan", "Healthy", "Gluten-Free"]
+    }
+  ]
+} 
