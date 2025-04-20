@@ -25,8 +25,10 @@ interface RecipePageProps {
   };
 }
 
-export default function RecipePage({ params }: RecipePageProps) {
-  const recipe = recipesData.recipes.find((r: Recipe) => r.id === params.id);
+export default async function RecipePage({ params }: RecipePageProps) {
+
+  const { id } = await params;
+  const recipe = recipesData.recipes.find((r: Recipe) => r.id === id);
 
   if (!recipe) {
     return (
