@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import ChatDrawer from "@/components/ChatDrawer";
-import LeftSidebar from "@/components/LeftSidebar";
 import { MessagesProvider } from "@/utilities/useMessages";
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,15 +19,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-white text-black`}>
-        <MessagesProvider>
-          <div className="flex h-screen">
-            <LeftSidebar />
-            <main className="flex-1 overflow-auto bg-white">
-              {children}
-            </main>
-            <ChatDrawer />
-          </div>
-        </MessagesProvider>
+        <AuthProvider>
+          <MessagesProvider>
+            {children}
+          </MessagesProvider>
+        </AuthProvider>
       </body>
     </html>
   );
