@@ -19,15 +19,13 @@ const NUTRITION_LABELS = {
   sugar: { label: 'Sugar', unit: 'g' }
 } as const;
 
-interface RecipePageProps {
-  params: {
-    id: string;
-  };
+type PageProps = {
+  params: Promise<{ id: string }>
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-export default async function RecipePage({ params }: RecipePageProps) {
-
-  const { id } = await params;
+export default async function RecipePage(props: PageProps) {
+  const { id } = await props.params;
   const recipe = recipesData.recipes.find((r: Recipe) => r.id === id);
 
   if (!recipe) {

@@ -7,7 +7,6 @@ import {
   ChatBubbleLeftRightIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { AIMessage } from '@langchain/core/messages';
 
 export default function ChatDrawer() {
   const [isOpen, setIsOpen] = useState(true);
