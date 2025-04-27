@@ -16,4 +16,122 @@ model User {
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Recipe {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  yield       String
+  prepTime    Int
+  cookTime    Int
+  totalTime   Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  ingredients RecipeIngredient[]
+  instructions RecipeInstruction[]
+  dietaryRestrictions RecipeDietaryRestriction[]
+  nutritionInfo NutritionInfo?
+  tags RecipeTag[]
+}
+
+model Ingredient {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  recipes RecipeIngredient[]
+}
+
+model RecipeIngredient {
+  id           String   @id @default(uuid())
+  recipeId     String
+  ingredientId String
+  quantity     Float
+  unit         String
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  recipe     Recipe     @relation(fields: [recipeId], references: [id])
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@unique([recipeId, ingredientId])
+}
+
+model RecipeInstruction {
+  id         String   @id @default(uuid())
+  recipeId   String
+  stepNumber Int
+  instruction String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  recipe Recipe @relation(fields: [recipeId], references: [id])
+}
+
+model DietaryRestriction {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  recipes RecipeDietaryRestriction[]
+}
+
+model RecipeDietaryRestriction {
+  recipeId             String
+  dietaryRestrictionId String
+  createdAt            DateTime @default(now())
+
+  // Relations
+  recipe             Recipe             @relation(fields: [recipeId], references: [id])
+  dietaryRestriction DietaryRestriction @relation(fields: [dietaryRestrictionId], references: [id])
+
+  @@id([recipeId, dietaryRestrictionId])
+}
+
+model NutritionInfo {
+  id             String   @id @default(uuid())
+  recipeId       String   @unique
+  calories       Int
+  protein        Float
+  fat            Float
+  fiber          Float
+  carbohydrates  Float
+  sugar          Float
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  recipe Recipe @relation(fields: [recipeId], references: [id])
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  recipes RecipeTag[]
+}
+
+model RecipeTag {
+  recipeId String
+  tagId    String
+  createdAt DateTime @default(now())
+
+  // Relations
+  recipe Recipe @relation(fields: [recipeId], references: [id])
+  tag    Tag    @relation(fields: [tagId], references: [id])
+
+  @@id([recipeId, tagId])
 } 

@@ -11,7 +11,7 @@ export default function LoginForm() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    login(email);
+    login();
     router.push('/dashboard');
   };
 

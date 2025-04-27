@@ -1,9 +1,7 @@
 'use client';
 
 import { use } from 'react';
-import { notFound } from 'next/navigation';
 import recipesData from '@/data/recipes.json';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Recipe } from '@/types/recipe';
 
 const DIETARY_STYLES = {
