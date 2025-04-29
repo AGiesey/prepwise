@@ -1,11 +1,7 @@
-import {
-  PlusIcon,
-  CalendarIcon,
-  ShoppingBagIcon,
-} from "@heroicons/react/24/outline";
 import RecipeStatsWidget from "@/components/widgets/RecipeStatsWidget";
 import RecentRecipesWidget from "@/components/widgets/RecentRecipesWidget";
 import MealPlanWidget from "@/components/widgets/MealPlanWidget";
+import QuickActionsWidget from "@/components/widgets/QuickActionsWidget";
 
 export default function DashboardPage() {
   const stats = [
@@ -36,24 +32,7 @@ export default function DashboardPage() {
         <MealPlanWidget meals={mealPlan} />
       </div>
 
-      {/* Quick Actions */}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-        <div className="flex space-x-4">
-          <button className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 flex items-center">
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Add New Recipe
-          </button>
-          <button className="px-4 py-2 border border-black rounded hover:bg-gray-100 flex items-center text-black">
-            <CalendarIcon className="h-5 w-5 mr-2" />
-            Plan Meals
-          </button>
-          <button className="px-4 py-2 border border-black rounded hover:bg-gray-100 flex items-center text-black">
-            <ShoppingBagIcon className="h-5 w-5 mr-2" />
-            Generate Shopping List
-          </button>
-        </div>
-      </div>
+      <QuickActionsWidget />
     </div>
   );
 } 

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 interface AuthContextType {
   isAuthenticated: boolean;

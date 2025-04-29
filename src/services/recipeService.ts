@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client'
 import { PrismaRecipe, RecipeDTO, CreateRecipeDTO, recipeInclude } from '@/types/dtos'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
 
 export class RecipeService {
   // Create a new recipe

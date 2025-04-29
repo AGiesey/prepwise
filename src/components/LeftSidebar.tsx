@@ -42,7 +42,7 @@ export default function LeftSidebar() {
               <li key={item.href}>
                 <Link 
                   href={item.href}
-                  className={`block px-4 py-2 rounded-md ${
+                  className={`flex items-center px-4 py-2 rounded-md ${
                     isActive ? 'bg-gray-200' : 'hover:bg-gray-100'
                   }`}
                 >

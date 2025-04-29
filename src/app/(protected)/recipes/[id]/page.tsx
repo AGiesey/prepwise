@@ -1,8 +1,9 @@
 'use client';
 
-import { use } from 'react';
-import recipesData from '@/data/recipes.json';
+import { use, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Recipe } from '@/types/recipe';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 const DIETARY_STYLES = {
   vegetarian: 'bg-green-100 text-green-800',
@@ -22,31 +23,131 @@ const NUTRITION_LABELS = {
   sugar: { label: 'Sugar', unit: 'g' }
 } as const;
 
-// Create a cache for recipe promises
-const recipeCache = new Map<string, Promise<Recipe>>();
-
-// Function to get or create a cached recipe promise
-function getRecipe(id: string) {
-  if (!recipeCache.has(id)) {
-    const recipe = recipesData.recipes.find(r => r.id === id);
-    if (!recipe) {
-      throw new Error('Recipe not found');
-    }
-    recipeCache.set(id, Promise.resolve(recipe));
-  }
-  return recipeCache.get(id)!;
+function RecipeLoadingSkeleton() {
+  return (
+    <div className="p-8 bg-white text-black">
+      <div className="max-w-4xl mx-auto">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div>
+              <div className="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
+              <div className="space-y-2">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="h-4 bg-gray-200 rounded w-full"></div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
+              <div className="space-y-2">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="h-4 bg-gray-200 rounded w-full"></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function RecipePage({ params }: { params: Promise<{ id: string }> }) {
-  // First unwrap the params Promise
   const { id } = use(params);
-  // Then use the unwrapped id to fetch the recipe from cache
-  const recipe = use(getRecipe(id));
+  const router = useRouter();
+  const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchRecipe = async () => {
+    try {
+      const response = await fetch(`/api/recipes/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch recipe');
+      }
+      const data = await response.json();
+      setRecipe(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this recipe?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/recipes/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete recipe');
+      }
+
+      router.push('/recipes');
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete recipe');
+    }
+  };
+
+  useEffect(() => {
+    fetchRecipe();
+  }, [id]);
+
+  if (loading) {
+    return <RecipeLoadingSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 bg-white text-black">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-red-500">{error}</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!recipe) {
+    return (
+      <div className="p-8 bg-white text-black">
+        <div className="max-w-4xl mx-auto">
+          <div>Recipe not found</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 bg-white text-black">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4">{recipe.title}</h1>
+        <div className="flex justify-start items-center mb-8">
+          <h1 className="text-3xl font-bold">{recipe.title}</h1>
+          <div className="flex gap-2 ml-5">
+            <button
+              onClick={() => router.push(`/recipes/${id}/edit`)}
+              className="p-1.5 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+              title="Edit recipe"
+            >
+              <PencilIcon className="h-5 w-5" />
+            </button>
+            <button
+              onClick={handleDelete}
+              className="p-1.5 bg-red-100 text-red-600 rounded hover:bg-red-200"
+              title="Delete recipe"
+            >
+              <TrashIcon className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+
         <p className="text-gray-600 mb-8">{recipe.description}</p>
 
         <div className="flex gap-4 mb-6">
@@ -62,7 +163,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
           <div>
             <h2 className="text-xl font-semibold mb-4">Ingredients</h2>
             <ul className="space-y-2">
-              {recipe.ingredients.map((ingredient: Recipe['ingredients'][0], index: number) => (
+              {recipe.ingredients.map((ingredient, index) => (
                 <li key={index} className="flex items-center">
                   <span className="font-medium">
                     {ingredient.quantity} {ingredient.unit} {ingredient.name}
@@ -76,7 +177,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
           <div>
             <h2 className="text-xl font-semibold mb-4">Instructions</h2>
             <ol className="space-y-4">
-              {recipe.instructions.map((instruction: string, index: number) => (
+              {recipe.instructions.map((instruction, index) => (
                 <li key={index} className="flex gap-2">
                   <span className="font-bold">{index + 1}.</span>
                   <span>{instruction}</span>
@@ -89,12 +190,14 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Nutrition Information</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {Object.entries(recipe.nutrition).map(([key, value]) => (
-              <div key={key} className="bg-gray-100 p-4 rounded">
-                <div className="font-semibold">{NUTRITION_LABELS[key as keyof typeof NUTRITION_LABELS].label}</div>
-                <div>{value}{NUTRITION_LABELS[key as keyof typeof NUTRITION_LABELS].unit}</div>
-              </div>
-            ))}
+            {Object.entries(recipe.nutrition)
+              .filter(([key]) => key in NUTRITION_LABELS)
+              .map(([key, value]) => (
+                <div key={key} className="bg-gray-100 p-4 rounded">
+                  <div className="font-semibold">{NUTRITION_LABELS[key as keyof typeof NUTRITION_LABELS].label}</div>
+                  <div>{value}{NUTRITION_LABELS[key as keyof typeof NUTRITION_LABELS].unit}</div>
+                </div>
+              ))}
           </div>
         </div>
 
@@ -117,7 +220,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Tags</h2>
           <div className="flex flex-wrap gap-2">
-            {recipe.tags.map((tag: string, index: number) => (
+            {recipe.tags.map((tag, index) => (
               <span 
                 key={index} 
                 className="px-3 py-1 bg-gray-100 rounded-full text-sm"
