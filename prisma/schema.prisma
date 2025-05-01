@@ -34,7 +34,7 @@ model Recipe {
 
 model Ingredient {
   id        String             @id @default(uuid())
-  name      String
+  name      String             @unique
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
   recipes   RecipeIngredient[]
@@ -50,7 +50,7 @@ model RecipeIngredient {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
-  recipe       Recipe     @relation(fields: [recipeId], references: [id])
+  recipe       Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
   @@unique([recipeId, ingredientId])
 }
@@ -62,7 +62,7 @@ model RecipeInstruction {
   instruction String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  recipe      Recipe   @relation(fields: [recipeId], references: [id])
+  recipe      Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
 model DietaryRestriction {
@@ -78,7 +78,7 @@ model RecipeDietaryRestriction {
   dietaryRestrictionId String
   createdAt            DateTime           @default(now())
   dietaryRestriction   DietaryRestriction @relation(fields: [dietaryRestrictionId], references: [id])
-  recipe               Recipe             @relation(fields: [recipeId], references: [id])
+  recipe               Recipe             @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
   @@id([recipeId, dietaryRestrictionId])
 }
@@ -94,7 +94,7 @@ model NutritionInfo {
   sugar         Float
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  recipe        Recipe   @relation(fields: [recipeId], references: [id])
+  recipe        Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
 model Tag {
@@ -109,7 +109,7 @@ model RecipeTag {
   recipeId  String
   tagId     String
   createdAt DateTime @default(now())
-  recipe    Recipe   @relation(fields: [recipeId], references: [id])
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   tag       Tag      @relation(fields: [tagId], references: [id])
 
   @@id([recipeId, tagId])
