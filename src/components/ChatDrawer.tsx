@@ -25,9 +25,8 @@ export default function ChatDrawer() {
     });
 
     const data = await response.json();
-    console.log(data.kwargs.content);
 
-    setMessages(prev => [...prev, { role: MessageRole.ASSISTANT, content: data.kwargs.content }]);
+    setMessages(prev => [...prev, { role: MessageRole.ASSISTANT, content: data.message }]);
   };
 
   return (
