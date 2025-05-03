@@ -208,9 +208,9 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
               value && (
                 <span 
                   key={key}
-                  className={`px-3 py-1 rounded-full text-sm ${DIETARY_STYLES[key as keyof typeof DIETARY_STYLES]}`}
+                  className={`px-3 py-1 rounded-full text-sm ${DIETARY_STYLES[key.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase()) as keyof typeof DIETARY_STYLES]}`}
                 >
-                  {key.replace(/([A-Z])/g, ' $1').trim()}
+                  {key.replace(/-/g, ' ')}
                 </span>
               )
             )}
