@@ -1,9 +1,7 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { AIMessage, trimMessages } from '@langchain/core/messages';
-
 import { v4 as uuidv4 } from "uuid";
-
 import {
   START,
   END,
@@ -27,23 +25,32 @@ const sousChefPromptTemplate = ChatPromptTemplate.fromMessages([
 
 const llm = new ChatOpenAI({
   model: "gpt-4o-mini",
-  temperature: 0.2 // lower the temperature the more predictible and "safe" the model is
+  temperature: 0.2, // lower the temperature the more predictible and "safe" the model is
+  verbose: true,
 });
 
 const trimmer = trimMessages({
-  maxTokens: 100,
+  maxTokens: 1000,
   strategy: "last",
-  tokenCounter: (msgs) => msgs.length,
+  tokenCounter: async (msgs) => {
+    const tokenizer = await llm.getNumTokensFromMessages(msgs);
+    return tokenizer.totalCount;
+  },
   includeSystem: true,
   allowPartial: false,
   startOn: "human",
 });
 
 const callModel = async (state: typeof MessagesAnnotation.State) => {
-  const trimmedMessages = await trimmer.invoke(state.messages);
-  const prompt = await sousChefPromptTemplate.invoke({ messages: trimmedMessages });
-  const response = await llm.invoke(prompt);
-  return { messages: [response] };
+  try {
+    const trimmedMessages = await trimmer.invoke(state.messages);
+    const prompt = await sousChefPromptTemplate.invoke({ messages: trimmedMessages });
+    const response = await llm.invoke(prompt);
+    return { messages: [response] };
+  } catch (error) {
+    console.error("Error calling model:", error);
+    return { messages: [new AIMessage("I'm sorry, I had an error processing your request. Please try again later.")] };
+  }
 };
 
 const workflow = new StateGraph(MessagesAnnotation)

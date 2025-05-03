@@ -3,15 +3,44 @@
 import { useState } from 'react';
 import { useMessages } from '@/utilities/useMessages';
 import { MessageRole } from '@/types/message';
+import { usePathname } from 'next/navigation';
 import {
   ChatBubbleLeftRightIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 
+interface ChatContext {
+  type: string;
+  id?: string;
+  metadata?: Record<string, any>;
+}
+
 export default function ChatDrawer() {
   const [isOpen, setIsOpen] = useState(true);
   const [message, setMessage] = useState('');
   const { messages, setMessages } = useMessages();
+  const pathname = usePathname();
+
+  // Parse context from pathname
+  const getContextFromPath = (): ChatContext | null => {
+    // Example paths:
+    // /recipes/[id] -> { type: 'recipe', id: 'xxx' }
+    // /recipes -> { type: 'recipe' }
+    // /meal-plan -> { type: 'meal-plan' }
+    const segments = pathname.split('/').filter(Boolean);
+    
+    if (segments.length === 0) return null;
+
+    const type = segments[0].replace(/-/g, ''); // Convert meal-plan to mealplan if needed
+    const id = segments[1];
+
+    if (!type) return null;
+
+    return {
+      type: type.endsWith('s') ? type.slice(0, -1) : type, // Convert 'recipes' to 'recipe'
+      ...(id && { id })
+    };
+  };
   
   const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -19,9 +48,17 @@ export default function ChatDrawer() {
     setMessages(prev => [...prev, { role: MessageRole.USER, content: message }]);
     setMessage('');
 
+    const context = getContextFromPath();
+
     const response = await fetch('/api/chat', {
       method: 'POST',
-      body: JSON.stringify({ message: message }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        message,
+        ...(context && { type: context.type, id: context.id })
+      }),
     });
 
     const data = await response.json();

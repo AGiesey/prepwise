@@ -1,18 +1,6 @@
 import { ChatOpenAI } from "@langchain/openai";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { AIMessage, HumanMessage, SystemMessage, trimMessages } from '@langchain/core/messages';
+import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 
-import { v4 as uuidv4 } from "uuid";
-
-const topicClassifyPromptTemplate = ChatPromptTemplate.fromMessages([
-  [
-    "system",
-    `You are to determine if the user's query is cooking 
-    related or not cooking related. Your only response will be ether
-    "cooking-related" or "not-cooking-related"`
-  ],
-  ["placeholder", "{messages}"]
-])
 
 const llm = new ChatOpenAI({
   model: "o3-mini-2025-01-31"
@@ -25,16 +13,22 @@ The messages set up should have
 3. The current question 
 */
 
+export type TopicClassification = 'context-related' | 'food-related' | 'not-food-related';
 
+export async function runTopicClassifierChain(message: string, contextualItems?: string[]): Promise<TopicClassification> {
+  const systemMessage = contextualItems 
+    ? `Given this context: ${JSON.stringify(contextualItems)}
+       Determine if the user's query is about this specific context ("context-related"),
+       about food but not this context ("food-related"), or neither ("not-food-related").
+       Respond with exactly one of: "context-related", "food-related", or "not-food-related"`
+    : `Determine if the user's query is food-related or not.
+       Respond with exactly one of: "food-related" or "not-food-related"`;
 
-export async function runTopicClassifierChain(message: string) {
   const messages = [
-    new SystemMessage(`You are to determine if the user's query is cooking
-      or food health related or not. Your only response will be ether
-      "cooking-related" or "not-cooking-related"`),
+    new SystemMessage(systemMessage),
     new HumanMessage(message)
-  ]
-  const response = await llm.invoke(messages);
+  ];
   
-  return response?.content ? response.content : "cooking-related";
+  const response = await llm.invoke(messages);
+  return (response?.content || "not-food-related") as TopicClassification;
 }
