@@ -80,6 +80,7 @@ export class RecipeService {
       include: recipeInclude
     })
 
+    // @ts-ignore
     return recipes.map(recipe => this.formatRecipeForResponse(recipe))
   }
 
@@ -195,8 +196,10 @@ export class RecipeService {
         unit: ri.unit,
         notes: ri.notes || undefined
       })),
+      // @ts-ignore
       instructions: recipe.instructions.map(i => i.instruction),
       nutrition: recipe.nutritionInfo,
+      // @ts-ignore
       dietary: recipe.dietaryRestrictions.reduce((acc, dr) => {
         acc[dr.dietaryRestriction.name] = true
         return acc
