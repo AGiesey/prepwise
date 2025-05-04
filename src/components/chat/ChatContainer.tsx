@@ -22,6 +22,8 @@ export const useChat = () => useContext(ChatContext);
 export default function ChatContainer() {
   const [isOpen, setIsOpen] = useState(true);
   const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showTyping, setShowTyping] = useState(false);
   const { messages, setMessages } = useMessages();
   const { type, id } = useChatContext();
 
@@ -30,18 +32,32 @@ export default function ChatContainer() {
     
     setMessages(prev => [...prev, { role: MessageRole.USER, content: message }]);
     setMessage('');
+    setIsLoading(true);
+    setShowTyping(false);
 
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message, type, id }),
-    });
+    // Add a small delay before showing the typing indicator
+    const typingTimer = setTimeout(() => {
+      setShowTyping(true);
+    }, 750);
 
-    const data = await response.json();
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message, type, id }),
+      });
 
-    setMessages(prev => [...prev, { role: MessageRole.ASSISTANT, content: data.message }]);
+      const data = await response.json();
+      setMessages(prev => [...prev, { role: MessageRole.ASSISTANT, content: data.message }]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
+      clearTimeout(typingTimer);
+      setIsLoading(false);
+      setShowTyping(false);
+    }
   };
 
   return (
@@ -56,7 +72,7 @@ export default function ChatContainer() {
         </button>
       )}
       <ChatSidebar isOpen={isOpen} onClose={() => setIsOpen(false)}>
-        <ChatMessages messages={messages} />
+        <ChatMessages messages={messages} isLoading={isLoading} showTyping={showTyping} />
         <ChatForm 
           message={message}
           onMessageChange={setMessage}
