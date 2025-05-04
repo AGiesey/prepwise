@@ -6,16 +6,10 @@ const llm = new ChatOpenAI({
   model: "o3-mini-2025-01-31"
 })
 
-/*
-The messages set up should have 
-1. The current context of the app in JSON format (recipe, grocery list, etc...)
-2. The topicClassifyPromptTemplate
-3. The current question 
-*/
-
 export type TopicClassification = 'context-related' | 'food-related' | 'not-food-related';
 
 export async function runTopicClassifierChain(message: string, contextualItems?: string[]): Promise<TopicClassification> {
+  
   const systemMessage = contextualItems 
     ? `Given this context: ${JSON.stringify(contextualItems)}
        Determine if the user's query is about this specific context ("context-related"),

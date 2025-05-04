@@ -1,6 +1,46 @@
 import { PrismaRecipe, RecipeDTO, CreateRecipeDTO, recipeInclude } from '@/types/dtos'
 import { prisma } from '@/lib/db'
 
+export const chatRecipeInclude = {
+  ingredients: {
+    select: {
+      ingredient: {
+        select: {
+          name: true
+        }
+      },
+      quantity: true,
+      unit: true,
+      notes: true
+    }
+  },
+  instructions: {
+    select: {
+      instruction: true,
+      stepNumber: true
+    }
+  },
+  nutritionInfo: {
+    select: {
+      calories: true,
+      protein: true,
+      fat: true,
+      fiber: true,
+      carbohydrates: true,
+      sugar: true
+    }
+  },
+  dietaryRestrictions: {
+    select: {
+      dietaryRestriction: {
+        select: {
+          name: true
+        }
+      }
+    }
+  }
+} as const;
+
 export class RecipeService {
   // Create a new recipe
   async createRecipe(recipeData: CreateRecipeDTO) {
@@ -206,5 +246,12 @@ export class RecipeService {
       }, {} as Record<string, boolean>),
       tags: []
     }
+  }
+
+  async getRecipeContextForChat(id: string) {
+    return await prisma.recipe.findUnique({
+      where: { id },
+      include: chatRecipeInclude
+    });
   }
 } 
