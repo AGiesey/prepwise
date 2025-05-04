@@ -1,6 +1,7 @@
 import { AuthLayout } from '@/components/AuthLayout';
-import ChatDrawer from '@/components/ChatDrawer';
 import LeftSidebar from '@/components/LeftSidebar';
+import ChatContainer from '@/components/chat/ChatContainer';
+import MainContentWrapper from '@/components/chat/MainContentWrapper';
 
 export default function ProtectedLayout({
   children,
@@ -11,10 +12,12 @@ export default function ProtectedLayout({
     <AuthLayout>
       <div className="flex h-screen bg-white">
         <LeftSidebar />
-        <main className="flex-1 overflow-auto bg-white">
-          {children}
-        </main>
-        <ChatDrawer />
+        <div className="flex-1 flex">
+          <MainContentWrapper>
+            {children}
+          </MainContentWrapper>
+          <ChatContainer />
+        </div>
       </div>
     </AuthLayout>
   );
