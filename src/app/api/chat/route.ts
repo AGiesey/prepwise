@@ -44,7 +44,7 @@ export async function POST(request: Request): Promise<NextResponse<{ message: Me
           return NextResponse.json({ message: contextResponse.messages[contextResponse.messages.length - 1].content });
         
         case 'food-related':
-          const cookingResponse = await runGeneralCookingChain([new AIMessage(message)]);
+          const cookingResponse = await runGeneralCookingChain(message);
           return NextResponse.json({ message: cookingResponse.messages[cookingResponse.messages.length - 1].content });
         
         case 'not-food-related':
@@ -59,7 +59,7 @@ export async function POST(request: Request): Promise<NextResponse<{ message: Me
   const classification = await runTopicClassifierChain(message);
   
   if (classification !== 'not-food-related') {
-    const response = await runGeneralCookingChain([new AIMessage(message)]);
+    const response = await runGeneralCookingChain(message);
     return NextResponse.json({ message: response.messages[response.messages.length - 1].content });
   }
 

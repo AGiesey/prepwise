@@ -1,6 +1,6 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { AIMessage, HumanMessage, BaseMessage, trimMessages } from '@langchain/core/messages';
+import { AIMessage, BaseMessage, HumanMessage, trimMessages } from '@langchain/core/messages';
 import { v4 as uuidv4 } from "uuid";
 import {
   START,
@@ -18,7 +18,7 @@ const sousChefPromptTemplate = ChatPromptTemplate.fromMessages([
     and kitchen execution. You focus on healthy, flavorful cooking while 
     accommodating dietary needs. You're knowledgeable about global 
     cuisines, ingredient substitutions, and food science. Keep responses 
-    to one short sentence, but if you think more details would be 
+    somewhat short, but if you think more details would be 
     helpful, end with 'Would you like more details?'`
   ],
   ["placeholder", "{messages}"],
@@ -44,56 +44,44 @@ const trimmer = trimMessages({
 
 const callModel = async (state: typeof MessagesAnnotation.State) => {
   try {
+    // First add any new messages to the state
+    
     const trimmedMessages = await trimmer.invoke(state.messages);
     const prompt = await sousChefPromptTemplate.invoke({ messages: trimmedMessages });
     const response = await llm.invoke(prompt);
     
     // Log successful model call with messages
     logChainOperation('model-call', {
-      messageCount: state.messages.length,
       trimmedCount: trimmedMessages.length,
       model: llm.model,
       temperature: llm.temperature,
-      messages: state.messages, // Include original messages
-      trimmedMessages, // Include trimmed messages
-      response: [response] // Include the response
+      messages: trimmedMessages,
+      trimmedMessages,
+      response: [response]
     });
     
-    return { messages: [response] };
+    return { messages: [...state.messages, response] };
   } catch (error) {
     // Log error with context and messages
     logChainError(error, 'model-call');
-    return { messages: [new AIMessage("I'm sorry, I had an error processing your request. Please try again later.")] };
+    return { messages: [...state.messages, new AIMessage("I'm sorry, I had an error processing your request. Please try again later.")] };
   }
 };
 
 const workflow = new StateGraph(MessagesAnnotation)
-  .addNode("model", callModel)
-  .addEdge(START, "model")
-  .addEdge("model", END);
+    .addNode("model", callModel)
+    .addEdge(START, "model")
+    .addEdge("model", END);
 
 const memory = new MemorySaver();
 const app = workflow.compile({ checkpointer: memory });
 const config = { configurable: { thread_id: uuidv4() } };
 
-export async function runGeneralCookingChain(messages: BaseMessage[]) {
-  try {
-    // Log chain start with messages
-    logChainOperation('chain-start', {
-      messageCount: messages.length,
-      threadId: config.configurable.thread_id,
-      messages // Include the input messages
-    });
-    
-    const result = await app.invoke({ messages }, config);
-    
-    // Log chain completion with result
-    logChainOperation('chain-complete', {
-      threadId: config.configurable.thread_id,
-      result // Include the final result
-    });
-    
-    return result;
+export async function runGeneralCookingChain(message: string) {
+  try {  
+    return await app.invoke({
+      messages: [new HumanMessage(message)]
+    }, config);
   } catch (error) {
     // Log chain error
     logChainError(error, 'chain-execution');

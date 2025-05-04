@@ -1,6 +1,6 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { AIMessage, trimMessages } from '@langchain/core/messages';
+import { HumanMessage, trimMessages } from '@langchain/core/messages';
 import { v4 as uuidv4 } from "uuid";
 import {
   START,
@@ -9,6 +9,7 @@ import {
   StateGraph,
   MemorySaver,
 } from "@langchain/langgraph";
+import { logChainError } from "@/utilities/logger";
 
 const contextSpecificPromptTemplate = ChatPromptTemplate.fromMessages([
   [
@@ -38,32 +39,38 @@ const trimmer = trimMessages({
   includeSystem: false,
   allowPartial: false,
   startOn: "human",
-});
+})
 
-// This seems to be trimming the context and I don't want it to.
-export async function runContextSpecificChain(message: string, context: any) {
-  const contextString = JSON.stringify(context);
-  
-  const callModel = async (state: typeof MessagesAnnotation.State) => {
+let currentContext: string | null = null;
+
+const callModel = async (state: typeof MessagesAnnotation.State) => {
     const trimmedMessages = await trimmer.invoke(state.messages);
     const prompt = await contextSpecificPromptTemplate.invoke({ 
-      messages: [...trimmedMessages, new AIMessage(message)],
-      context: contextString
+      messages: trimmedMessages,
+      context: currentContext || ''
     });
     const response = await llm.invoke(prompt);
-    return { messages: [response] };
+    return { messages: [...state.messages, response] };
   };
 
-  const workflow = new StateGraph(MessagesAnnotation)
+const workflow = new StateGraph(MessagesAnnotation)
     .addNode("model", callModel)
     .addEdge(START, "model")
     .addEdge("model", END);
 
-  const memory = new MemorySaver();
-  const app = workflow.compile({ checkpointer: memory });
-  const config = { configurable: { thread_id: uuidv4() } };
+const memory = new MemorySaver();
+const app = workflow.compile({ checkpointer: memory });
+const config = { configurable: { thread_id: uuidv4() } };
 
-  return await app.invoke({ 
-    messages: [new AIMessage(message)]
-  }, config);
+export async function runContextSpecificChain(message: string, context: any) {
+  try {
+    currentContext = JSON.stringify(context);
+    return await app.invoke({ 
+      messages: [new HumanMessage(message)]
+    }, config);
+  } catch (error) {
+    // Log chain error
+    logChainError(error, 'chain-execution');
+    throw error;
+  }
 } 
