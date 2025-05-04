@@ -3,6 +3,7 @@ import { runGeneralCookingChain } from './chains/runGeneralCookingChain';
 import { runContextSpecificChain } from './chains/runContextSpecificChain';
 import { logDebug } from '@/utilities/logger';
 import { RecipeService } from '@/services/recipeService';
+import { transformRecipeForChat } from './recipeTransformer';
 
 export class ChatService {
   private recipeService: RecipeService;
@@ -13,7 +14,8 @@ export class ChatService {
 
   private async getContextualItems(type: string, id?: string) {
     if (type === 'recipes' && id) {
-      return await this.recipeService.getRecipeContextForChat(id);
+      const recipe = await this.recipeService.getRecipeContextForChat(id);
+      return recipe ? transformRecipeForChat(recipe) : null;
     }
     return null;
   }
