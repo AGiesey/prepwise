@@ -12,7 +12,7 @@ export class ChatService {
   }
 
   private async getContextualItems(type: string, id?: string) {
-    if (type === 'recipe' && id) {
+    if (type === 'recipes' && id) {
       return await this.recipeService.getRecipeContextForChat(id);
     }
     return null;
@@ -24,6 +24,7 @@ export class ChatService {
   }
 
   async processMessage(message: string, type?: string, id?: string) {
+
     // First check if we have a specific entity context
     if (type && id) {
       const contextualItems = await this.getContextualItems(type, id);

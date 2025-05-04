@@ -7,6 +7,7 @@ import ChatMessages from './ChatMessages';
 import ChatForm from './ChatForm';
 import { useMessages } from '@/utilities/useMessages';
 import { MessageRole } from '@/types/message';
+import { useChatContext } from './utils/chatContext';
 
 export const ChatContext = createContext<{
   isOpen: boolean;
@@ -22,6 +23,7 @@ export default function ChatContainer() {
   const [isOpen, setIsOpen] = useState(true);
   const [message, setMessage] = useState('');
   const { messages, setMessages } = useMessages();
+  const { type, id } = useChatContext();
 
   const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -34,7 +36,7 @@ export default function ChatContainer() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message, type, id }),
     });
 
     const data = await response.json();
