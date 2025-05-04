@@ -2,7 +2,6 @@ import winston from 'winston';
 import { BaseMessage } from '@langchain/core/messages';
 import { Logtail } from "@logtail/node";
 import { LogtailTransport } from "@logtail/winston";
-import { env } from 'process';
 
 // Helper function to safely format messages for logging
 const formatMessageForLogging = (message: BaseMessage) => {
@@ -19,25 +18,26 @@ const formatMessageForLogging = (message: BaseMessage) => {
 
 const logTailSourceToken = process.env.LOGTAIL_SOURCE_TOKEN || '';
 const ingestingHost = process.env.LOGTAIL_INGESTING_HOST || '';
-
-const logtail = new Logtail(logTailSourceToken, {
-  endpoint: `https://${ingestingHost}`
-});
-
 const logToLogtail = process.env?.LOGTAIL_ENABLED === 'true';
 
 const transports: winston.transport[] = [
   new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
+  new winston.transports.File({ filename: 'logs/debug.log', level: 'debug' }),
   new winston.transports.File({ filename: 'logs/combined.log' })
 ]
 
 if (logToLogtail) {
+  const logtail = new Logtail(logTailSourceToken, {
+    endpoint: `https://${ingestingHost}`
+  });
   transports.push(new LogtailTransport(logtail))
 }
 
+const logLevel = process.env.LOG_LEVEL || 'info';
+
 // Create a logger instance
 const logger = winston.createLogger({
-  level: 'info',
+  level: logLevel,
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.json()
@@ -47,10 +47,10 @@ const logger = winston.createLogger({
 
 // Add a method to log chain class operations
 export const logChainOperation = (operation: string, data: any) => {
-  // If data contains messages, format them for logging
-  // if (data.messages) {
-  //   data.messages = data.messages.map(formatMessageForLogging);
-  // }
+  //If data contains messages, format them for logging
+  if (data.messages) {
+    data.messages = data.messages.map(formatMessageForLogging);
+  }
   
   logger.info('Chain Operation', {
     operation,
@@ -65,6 +65,20 @@ export const logChainError = (error: any, context: string) => {
     error: error.message || error,
     context,
     stack: error.stack,
+    timestamp: new Date().toISOString()
+  });
+};
+
+export const logInfo = (message: string, data?: any) => {
+  logger.info(message, {
+    ...data,
+    timestamp: new Date().toISOString()
+  });
+};
+
+export const logDebug = (message: string, data?: any) => {
+  logger.debug(message, {
+    ...data,
     timestamp: new Date().toISOString()
   });
 };
