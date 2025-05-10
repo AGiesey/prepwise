@@ -1,6 +1,10 @@
 import { PrismaRecipe, RecipeDTO, CreateRecipeDTO, recipeInclude } from '@/types/dtos'
 import { prisma } from '@/lib/db'
 
+prisma.$connect()
+  .then(() => console.log('RecipeService: Connected to database'))
+  .catch((e) => console.error('RecipeService: Failed to connect:', e))
+
 export const chatRecipeInclude = {
   ingredients: {
     select: {
