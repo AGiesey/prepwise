@@ -10,7 +10,7 @@ export default function ProtectedLayout({
 }) {
   return (
     <AuthLayout>
-      <div className="flex h-screen bg-white">
+      <div className="flex h-screen">
         <LeftSidebar />
         <div className="flex-1 flex">
           <MainContentWrapper>

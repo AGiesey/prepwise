@@ -30,7 +30,7 @@ export default async function RecipesPage() {
   const recipes = await getRecipes();
 
   return (
-    <div className="p-8 bg-white text-black">
+    <div className="p-8">
       <div className="flex justify-start items-center mb-8">
         <h1 className="text-3xl font-bold">Recipes</h1>
         <Link 
