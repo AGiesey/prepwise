@@ -30,15 +30,15 @@ export default async function RecipesPage() {
   const recipes = await getRecipes();
 
   return (
-    <div className="p-8">
-      <div className="flex justify-start items-center mb-8">
+    <div className="p-8 bg-background">
+      <div className="flex justify-start items-center mb-8 ">
         <h1 className="text-3xl font-bold">Recipes</h1>
         <Link 
           href="/recipes/new"
-          className="p-1.5 bg-black text-white rounded hover:bg-gray-800 ml-5"
+          className="p-1.5 bg-accent-green text-white rounded hover:bg-gray-800 ml-5"
           title="Add new"
         >
-          <PlusIcon className="h-5 w-5" />
+          <PlusIcon className="h-5 w-5 " />
         </Link>
       </div>
 

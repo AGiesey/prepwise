@@ -1,11 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --color-avocado-100: oklch(0.99 0 0);
-  --color-avocado-200: oklch(0.98 0.04 113.22);
-  --color-avocado-300: oklch(0.94 0.11 115.03);
-  --color-avocado-400: oklch(0.92 0.19 114.08);
-  --color-avocado-500: oklch(0.84 0.18 117.33);
-  --color-avocado-600: oklch(0.53 0.12 118.34);
+  --color-background: #fefdfb;     /* Coconut white */
+  --color-surface: #fffdf8;        /* Slightly off-white for cards */
+  --color-text: #2e2e2e;           /* Deep neutral gray */
+  --color-heading: #1a1a1a;        /* Stronger black for headings */
+
+  --color-accent-green: #5a9a68;   /* Kale green */
+  --color-accent-orange: #f18f01;  /* Carrot orange */
+  --color-accent-red: #c93f3f;     /* Berry red */
+  --color-accent-yellow: #fcd34d;  /* Lemon yellow (subtle use) */
+
+  --color-border: #e5e5e5;         /* Light neutral gray */
+  --color-muted: #9ca3af;          /* Muted text or helpers */;
 }
 
