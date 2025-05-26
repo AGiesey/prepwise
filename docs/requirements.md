@@ -88,4 +88,5 @@ This is a Next.js web application that helps users manage and interact with thei
 - All LangChain-related logic lives in the `/chat` directory
 - Chains are separated by purpose: `runRecipePromptChain`, `runGeneralCookingChain`, etc.
 - Recipes will soon be tied to users, so database changes should be expected
+- For technical implementation details, see `ARCHITECTURE.md`
 
