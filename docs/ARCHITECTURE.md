@@ -5,7 +5,7 @@
 
 ## Overview
 
-The Kitchen AI App is built on a pipeline-based architecture that orchestrates multiple LangChain-powered conversation chains. The system is designed to provide a natural, context-aware chat experience while maintaining scalability and extensibility.
+PrepWise is built on a pipeline-based architecture that orchestrates multiple LangChain-powered conversation chains. The system is designed to provide a natural, context-aware chat experience while maintaining scalability and extensibility.
 
 ### Core Architectural Components
 
