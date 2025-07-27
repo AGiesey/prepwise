@@ -11,7 +11,7 @@ global.TextDecoder = TextDecoder;
 
 // Polyfill ReadableStream for Node.js environment
 if (typeof global.ReadableStream === 'undefined') {
-  global.ReadableStream = require('web-streams-polyfill/ponyfill').ReadableStream;
+  global.ReadableStream = require('web-streams-polyfill/dist/ponyfill.js').ReadableStream;
 }
 
 // Mock environment variables

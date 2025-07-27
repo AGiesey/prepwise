@@ -23,6 +23,7 @@
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
     "uuid": "^11.1.0",
+    "web-streams-polyfill": "^4.1.0",
     "winston": "^3.17.0"
   },
   "devDependencies": {
