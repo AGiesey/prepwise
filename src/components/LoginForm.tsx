@@ -42,7 +42,7 @@ export default function LoginForm() {
             name="email"
             type="email"
             required
-            className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+            className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-gray-500 focus:border-gray-500 focus:z-10 sm:text-sm"
             placeholder="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -58,7 +58,7 @@ export default function LoginForm() {
             name="password"
             type="password"
             required
-            className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+            className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-gray-500 focus:border-gray-500 focus:z-10 sm:text-sm"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -71,16 +71,18 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={isLoggingIn}
-          className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoggingIn ? 'Signing in...' : 'Sign in'}
         </button>
       </div>
 
-      <div className="text-sm text-gray-600">
-        <p>Test accounts:</p>
-        <p>Admin: admin@test.com / Testing123!</p>
-        <p>User: user@test.com / Testing123!</p>
+      <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-md border border-gray-200">
+        <p className="font-medium text-gray-700 mb-2">Test Accounts</p>
+        <div className="space-y-1 text-xs">
+          <p><span className="font-medium">Admin:</span> admin@test.com / Testing123!</p>
+          <p><span className="font-medium">User:</span> user@test.com / Testing123!</p>
+        </div>
       </div>
     </form>
   );
