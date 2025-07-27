@@ -14,6 +14,9 @@
 - Recipe modification chain implementation
 - Memory cleanup policies
 - Monitoring system for pipeline performance
+- User authentication system with secure login/logout
+- User-recipe ownership and access control
+- User-specific recipe collections and favorites
 
 ## [2024-03-XX] - Initial Architecture
 ### Added

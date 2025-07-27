@@ -22,7 +22,7 @@ This is a Next.js web application that helps users manage and interact with thei
   - Dietary restriction tags
   - Tags that help users group recipes
 
-> 🔧 *Note: Recipes are not yet tied to users.*
+> 🔧 *Note: Recipes will be tied to authenticated users once the authentication system is implemented.*
 
 ---
 
@@ -46,7 +46,11 @@ This is a Next.js web application that helps users manage and interact with thei
       - A new recipe is created.
       - A new title is auto-generated.
       - It is inserted into the database.
-      - (Once user model is implemented) It is associated with the correct user.
+      - It is associated with the authenticated user.
+- **User Context Integration**:
+  - Chat responses include user-specific context
+  - User memory isolation for personalized conversations
+  - Recipe modifications respect user ownership
 
 ### 🧪 Recipe Link Parsing
 - If a user pastes a recipe URL:
@@ -57,14 +61,34 @@ This is a Next.js web application that helps users manage and interact with thei
 
 ## Near-Term Development Goals
 
-### 👤 User Accounts & Sharing
-- Create a `users` table and a join table between `users` and `recipes`.
-- Allow users to:
-  - View their own recipes.
-  - Share recipes with other users.
-- (Design still evolving) Possibly include:
-  - Permission types (e.g., view-only, editable)
-  - Friend or group structures
+### 🔐 Authentication System
+- **Provider-Agnostic Authentication**: Support multiple authentication providers (FusionAuth, AWS Cognito) with easy switching
+- **User Management**: 
+  - User registration and login through authentication providers
+  - Secure token management and session handling
+  - User profile management with roles and permissions
+- **Role-Based Access Control**:
+  - Support for multiple user roles (user, admin, moderator, etc.)
+  - Role-based route protection and UI components
+  - Permission checking utilities and hooks
+- **Database Integration**:
+  - User model with roles array, external ID, and provider tracking
+  - Recipe ownership with user relationships
+  - Public/private recipe controls
+
+### 👤 User Accounts & Recipe Ownership
+- **User-Recipe Relationships**: 
+  - Tie recipes to authenticated users
+  - User-specific recipe filtering and management
+  - Recipe privacy controls (public/private)
+- **Recipe Management**:
+  - Users can view, create, edit, and delete their own recipes
+  - Recipe creation automatically associates with current user
+  - User dashboard with personal recipe collections
+- **Access Control**:
+  - Users can only modify their own recipes
+  - Public recipes visible to all users
+  - Private recipes only visible to owner
 
 ---
 
@@ -87,6 +111,7 @@ This is a Next.js web application that helps users manage and interact with thei
 ## Notes for Cursor
 - All LangChain-related logic lives in the `/chat` directory
 - Chains are separated by purpose: `runRecipePromptChain`, `runGeneralCookingChain`, etc.
-- Recipes will soon be tied to users, so database changes should be expected
-- For technical implementation details, see `ARCHITECTURE.md`
+- Authentication system will be implemented with provider-agnostic design
+- User context will be integrated with chat system for personalized experiences
+- For technical implementation details, see `ARCHITECTURE.md` and `docs/architecture/authentication-system.md`
 
