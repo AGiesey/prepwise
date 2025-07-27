@@ -1,6 +1,19 @@
 // Learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom'
 
+// Add OpenAI Node.js shim for fetch API
+import 'openai/shims/node'
+
+// Polyfill TextEncoder for Node.js environment
+import { TextEncoder, TextDecoder } from 'util';
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
+// Polyfill ReadableStream for Node.js environment
+if (typeof global.ReadableStream === 'undefined') {
+  global.ReadableStream = require('web-streams-polyfill/ponyfill').ReadableStream;
+}
+
 // Mock environment variables
 process.env.OPENAI_API_KEY = 'test-api-key'
 process.env.LOGTAIL_SOURCE_TOKEN = 'test-logtail-token'

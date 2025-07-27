@@ -1,9 +1,7 @@
-import { runTopicClassifierChain, TopicClassification } from './chains/runTopicClassifierChain';
-import { runGeneralCookingChain } from './chains/runGeneralCookingChain';
-import { runContextSpecificChain } from './chains/runContextSpecificChain';
 import { logDebug } from '@/utilities/logger';
 import { RecipeService } from '@/services/recipeService';
 import { transformRecipeForChat } from './recipeTransformer';
+import { ChatPipelineFactory } from './pipeline';
 
 export class ChatService {
   private recipeService: RecipeService;
@@ -20,49 +18,41 @@ export class ChatService {
     return null;
   }
 
-  private async classifyMessageContext(message: string, contextualItems: any): Promise<TopicClassification> {
-    const result = await runTopicClassifierChain(message, contextualItems);
-    return result;
-  }
-
   async processMessage(message: string, type?: string, id?: string) {
-
-    // First check if we have a specific entity context
-    if (type && id) {
-      const contextualItems = await this.getContextualItems(type, id);
-      
-      if (contextualItems) {
-        const classification = await this.classifyMessageContext(message, contextualItems);
-        
-        logDebug("CLASSIFYING MESSAGE CONTEXT", {
-          message,
-          contextualItems,
-          classification
-        });
-        
-        switch (classification) {
-          case 'context-related':
-            const contextResponse = await runContextSpecificChain(message, contextualItems);
-            return contextResponse.messages[contextResponse.messages.length - 1].content;
-          
-          case 'food-related':
-            const cookingResponse = await runGeneralCookingChain(message);
-            return cookingResponse.messages[cookingResponse.messages.length - 1].content;
-          
-          case 'not-food-related':
-            return "I'm specialized in cooking-related topics. Could you please ask me something about cooking or food?";
-        }
-      }
+    // Guard against empty messages
+    if (!message || message.trim() === '') {
+      return "Please provide a message to process.";
     }
 
-    // If no context is provided or context wasn't found, use general classification
-    const classification = await runTopicClassifierChain(message);
+    // Get contextual items if available
+    const contextualItems = type ? await this.getContextualItems(type, id) : null;
     
-    if (classification !== 'not-food-related') {
-      const response = await runGeneralCookingChain(message);
-      return response.messages[response.messages.length - 1].content;
-    }
+    // Create pipeline based on whether we have context
+    const pipeline = ChatPipelineFactory.createPipeline(!!contextualItems);
+    
+    // Prepare pipeline input
+    const pipelineInput = {
+      message: message.trim(),
+      type,
+      id,
+      context: contextualItems,
+      metadata: {
+        hasContext: !!contextualItems,
+        contextType: type,
+        contextId: id
+      }
+    };
 
-    return "I'm specialized in cooking-related topics. Could you please ask me something about cooking or food?";
+    logDebug("PROCESSING_MESSAGE_WITH_PIPELINE", {
+      message,
+      hasContext: !!contextualItems,
+      contextType: type,
+      contextId: id
+    });
+
+    // Execute pipeline
+    const result = await pipeline.execute(pipelineInput);
+    
+    return result.result;
   }
 } 
