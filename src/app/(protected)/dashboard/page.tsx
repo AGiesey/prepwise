@@ -2,6 +2,7 @@ import RecipeStatsWidget from "@/components/widgets/RecipeStatsWidget";
 import RecentRecipesWidget from "@/components/widgets/RecentRecipesWidget";
 import MealPlanWidget from "@/components/widgets/MealPlanWidget";
 import QuickActionsWidget from "@/components/widgets/QuickActionsWidget";
+import UserProfile from "@/components/UserProfile";
 
 export default function DashboardPage() {
   const stats = [
@@ -26,13 +27,20 @@ export default function DashboardPage() {
     <div className="p-8 text-black">
       <h1 className="text-3xl font-bold mb-8">My Kitchen</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <RecipeStatsWidget stats={stats} />
-        <RecentRecipesWidget recipes={recentRecipes} />
-        <MealPlanWidget meals={mealPlan} />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <RecipeStatsWidget stats={stats} />
+            <RecentRecipesWidget recipes={recentRecipes} />
+            <MealPlanWidget meals={mealPlan} />
+          </div>
+          <QuickActionsWidget />
+        </div>
+        
+        <div className="lg:col-span-1">
+          <UserProfile />
+        </div>
       </div>
-
-      <QuickActionsWidget />
     </div>
   );
 } 

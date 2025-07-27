@@ -28,9 +28,23 @@ const navItems: NavItem[] = [
 ];
 
 export default function LeftSidebar() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    
+    try {
+      setIsLoggingOut(true);
+      await logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <div className={`bg-gray-50 border-r border-gray-200 flex flex-col h-full transition-all duration-300 ${
@@ -74,11 +88,25 @@ export default function LeftSidebar() {
         </ul>
       </nav>
 
-      <div className="mt-auto p-4">
-        <Tooltip text="Logout">
+      <div className="mt-auto p-4 space-y-4">
+        {/* User Info */}
+        {user && !isCollapsed && (
+          <div className="border-t pt-4">
+            <div className="text-sm text-gray-600">
+              <p className="font-medium">{user.name || user.email}</p>
+              <p className="text-xs text-gray-500">
+                {user.roles.join(', ')}
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {/* Logout Button */}
+        <Tooltip text={isLoggingOut ? "Logging out..." : "Logout"}>
           <button
-            onClick={logout}
-            className={`w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md ${
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className={`w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md disabled:opacity-50 disabled:cursor-not-allowed ${
               isCollapsed ? 'flex justify-center' : ''
             }`}
           >
@@ -87,7 +115,7 @@ export default function LeftSidebar() {
                 <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
               </svg>
             ) : (
-              'Logout'
+              isLoggingOut ? 'Logging out...' : 'Logout'
             )}
           </button>
         </Tooltip>
