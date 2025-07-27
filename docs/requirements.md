@@ -22,7 +22,7 @@ This is a Next.js web application that helps users manage and interact with thei
   - Dietary restriction tags
   - Tags that help users group recipes
 
-> 🔧 *Note: Recipes will be tied to authenticated users once the authentication system is implemented.*
+> ✅ *Note: Recipes are now tied to authenticated users through the implemented authentication system.*
 
 ---
 
@@ -61,7 +61,7 @@ This is a Next.js web application that helps users manage and interact with thei
 
 ## Near-Term Development Goals
 
-### 🔐 Authentication System
+### ✅ Authentication System
 - **Provider-Agnostic Authentication**: Support multiple authentication providers (FusionAuth, AWS Cognito) with easy switching
 - **User Management**: 
   - User registration and login through authentication providers
@@ -76,7 +76,7 @@ This is a Next.js web application that helps users manage and interact with thei
   - Recipe ownership with user relationships
   - Public/private recipe controls
 
-### 👤 User Accounts & Recipe Ownership
+### ✅ User Accounts & Recipe Ownership
 - **User-Recipe Relationships**: 
   - Tie recipes to authenticated users
   - User-specific recipe filtering and management

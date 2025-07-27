@@ -10,12 +10,19 @@
 - Moved from simple chain routing to pipeline pattern
 - Enhanced memory management with vector storage
 
+### Added
+- User authentication system with secure login/logout
+- User-recipe ownership and access control
+- Role-based access control with admin/user roles
+- User profile management and display
+- Authentication middleware for route protection
+- Mock authentication provider for development
+- Token-based authentication with cookie management
+
 ### Planned
 - Recipe modification chain implementation
 - Memory cleanup policies
 - Monitoring system for pipeline performance
-- User authentication system with secure login/logout
-- User-recipe ownership and access control
 - User-specific recipe collections and favorites
 
 ## [2024-03-XX] - Initial Architecture

@@ -175,48 +175,48 @@ JWT_EXPIRES_IN=7d
 ### Phase 1: Core Infrastructure
 
 #### 1.1 Database Schema Updates
-- [ ] Create Prisma migration for new User model (roles array, externalId, authProvider)
-- [ ] Update Recipe model to include userId and isPublic fields
-- [ ] Run migrations and update seed data
+- [x] Create Prisma migration for new User model (roles array, externalId, authProvider)
+- [x] Update Recipe model to include userId and isPublic fields
+- [x] Run migrations and update seed data
 
 #### 1.2 Authentication Service Layer
-- [ ] Create `src/services/auth/types.ts` with all interfaces
-- [ ] Create `src/services/auth/AuthService.ts` (main service wrapper)
-- [ ] Create `src/services/auth/providers/AuthProvider.ts` (base interface)
-- [ ] Create `src/services/auth/providers/MockAuthProvider.ts` (development provider)
-- [ ] Create `src/services/auth/index.ts` (exports)
+- [x] Create `src/services/auth/types.ts` with all interfaces
+- [x] Create `src/services/auth/AuthService.ts` (main service wrapper)
+- [x] Create `src/services/auth/providers/AuthProvider.ts` (base interface)
+- [x] Create `src/services/auth/providers/MockAuthProvider.ts` (development provider)
+- [x] Create `src/services/auth/index.ts` (exports)
 
 #### 1.3 API Routes
-- [ ] Create `/api/auth/login` endpoint
-- [ ] Create `/api/auth/logout` endpoint
-- [ ] Create `/api/auth/me` endpoint (get current user)
-- [ ] Create authentication middleware for protected routes
+- [x] Create `/api/auth/login` endpoint
+- [x] Create `/api/auth/logout` endpoint
+- [x] Create `/api/auth/me` endpoint (get current user)
+- [x] Create authentication middleware for protected routes
 
 ### Phase 2: Frontend Integration
 
 #### 2.1 Update AuthContext
-- [ ] Refactor `src/contexts/AuthContext.tsx` to use new AuthService
-- [ ] Implement proper token management (JWT storage/refresh)
-- [ ] Add user state management with roles
-- [ ] Update loading states and error handling
+- [x] Refactor `src/contexts/AuthContext.tsx` to use new AuthService
+- [x] Implement proper token management (JWT storage/refresh)
+- [x] Add user state management with roles
+- [x] Update loading states and error handling
 
 #### 2.2 Authentication UI
-- [ ] Update `src/components/LoginForm.tsx` to use new auth service
-- [ ] Create `src/components/InvitationAcceptForm.tsx` (for accepting invites)
-- [ ] Update protected route components
+- [x] Update `src/components/LoginForm.tsx` to use new auth service
+- [ ] Create `src/components/InvitationAcceptForm.tsx` (for accepting invites) - *Removed from scope*
+- [x] Update protected route components
 
 #### 2.3 User Management UI
-- [ ] Create user profile page
-- [ ] Update navigation to show user info
-- [ ] Add logout functionality
+- [x] Create user profile page
+- [x] Update navigation to show user info
+- [x] Add logout functionality
 
 ### Phase 3: Role-Based Access Control
 
 #### 3.1 Role Management
-- [ ] Create role checking utilities
+- [x] Create role checking utilities
 - [ ] Implement admin-only route protection
-- [ ] Add role-based UI components
-- [ ] Create permission checking hooks
+- [x] Add role-based UI components
+- [x] Create permission checking hooks
 
 ### Phase 4: Recipe Ownership
 
