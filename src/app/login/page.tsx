@@ -8,7 +8,7 @@ export default function LoginPage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-2">PrepWise</h1>
           <p className="text-gray-600 mb-6">Your smart kitchen companion</p>
           <h2 className="text-2xl font-semibold text-gray-900">
-            Sign in to your account
+            Sign in to your account (testing)
           </h2>
         </div>
         <LoginForm />
