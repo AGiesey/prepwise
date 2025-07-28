@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "vercel-build": "yarn prisma generate && yarn prisma db push && yarn build",
+    "vercel-build": "yarn prisma generate && yarn build",
+    "postinstall": "prisma generate",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -19,6 +20,7 @@
     "@langchain/openai": "^0.5.6",
     "@logtail/winston": "^0.5.4",
     "@prisma/client": "^6.7.0",
+    "prisma": "^6.7.0",
     "next": "15.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
