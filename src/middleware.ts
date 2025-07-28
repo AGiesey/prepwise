@@ -32,6 +32,11 @@ export function middleware(request: NextRequest) {
   const authToken = request.cookies.get('auth-token')?.value;
   const isAuthenticated = !!authToken;
 
+  // For API routes, let them handle their own authentication
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+
   // Redirect to login if accessing protected route without authentication
   if (isProtectedRoute && !isAuthenticated) {
     const loginUrl = new URL('/login', request.url);

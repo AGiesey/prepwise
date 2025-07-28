@@ -102,9 +102,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       // Set a cookie for middleware to detect authentication
-      document.cookie = `auth-token=${data.tokens?.accessToken || 'authenticated'}; path=/; max-age=3600`;
+      document.cookie = `auth-token=${data.tokens?.accessToken || 'authenticated'}; path=/; max-age=3600; SameSite=Lax`;
       
-      router.push('/dashboard');
+      // Use replace to avoid back button issues
+      router.replace('/dashboard');
     } catch (error: unknown) {
       setError(error as AuthError);
       throw error;
@@ -130,7 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       
       setUser(null);
-      router.push('/login');
+      router.replace('/login');
     } catch (error) {
       console.error('Logout error:', error);
       // Even if logout fails, clear local state
@@ -139,7 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem('refreshToken');
       // Clear the auth cookie
       document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      router.push('/login');
+      router.replace('/login');
     } finally {
       setIsLoading(false);
     }

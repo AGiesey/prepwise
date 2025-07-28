@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     const authError = error as AuthError;
     return NextResponse.json(
       { 
-        errorr: authError.message || 'Login failed',
+        error: authError.message || 'Login failed',
         code: authError.code || 'UNKNOWN_ERROR'
       },
       { status: 401 }
