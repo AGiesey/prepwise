@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthService } from '@/services/auth';
+import { AuthError } from '@/services/auth/types';
+
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,13 +24,12 @@ export async function POST(request: NextRequest) {
       message: 'Login successful'
     });
 
-  } catch (error: any) {
-    console.error('Login error:', error);
-    
+  } catch (error: unknown) {
+    const authError = error as AuthError;
     return NextResponse.json(
       { 
-        error: error.message || 'Login failed',
-        code: error.code || 'UNKNOWN_ERROR'
+        errorr: authError.message || 'Login failed',
+        code: authError.code || 'UNKNOWN_ERROR'
       },
       { status: 401 }
     );

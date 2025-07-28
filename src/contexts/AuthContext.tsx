@@ -3,7 +3,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { AuthService } from '@/services/auth';
 import { AuthUser, LoginCredentials, AuthError } from '@/services/auth';
 
 interface AuthContextType {
@@ -26,7 +25,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<AuthError | null>(null);
   const router = useRouter();
 
-  const authService = AuthService.getInstance();
 
   // Check authentication status on mount
   useEffect(() => {
@@ -107,9 +105,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       document.cookie = `auth-token=${data.tokens?.accessToken || 'authenticated'}; path=/; max-age=3600`;
       
       router.push('/dashboard');
-    } catch (error: any) {
-      console.error('Login error:', error);
-      setError(error);
+    } catch (error: unknown) {
+      setError(error as AuthError);
       throw error;
     } finally {
       setIsLoggingIn(false);

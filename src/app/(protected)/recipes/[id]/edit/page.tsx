@@ -21,8 +21,9 @@ async function getRecipe(id: string): Promise<Recipe> {
   }
 }
 
-export default async function EditRecipePage({ params }: { params: { id: string } }) {
-  const recipe = await getRecipe(params.id);
+export default async function EditRecipePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const recipe = await getRecipe(id);
 
   return (
     <div className="p-8 bg-white text-black">

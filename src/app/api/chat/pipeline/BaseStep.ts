@@ -24,6 +24,7 @@ export abstract class BaseStep implements PipelineStep {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected handleError(error: any, input: PipelineInput): PipelineOutput {
     logChainError(error, `step-${this.name}`);
     

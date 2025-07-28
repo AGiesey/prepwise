@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../AuthContext';
 import { AuthService } from '@/services/auth';
-import { MockAuthProvider } from '@/services/auth/providers/MockAuthProvider';
 
 // Mock the AuthService
 jest.mock('@/services/auth', () => ({
@@ -37,10 +37,8 @@ function TestComponent() {
 
 describe('AuthContext', () => {
   let mockAuthService: jest.Mocked<AuthService>;
-  let mockProvider: MockAuthProvider;
 
   beforeEach(() => {
-    mockProvider = new MockAuthProvider();
     mockAuthService = {
       getCurrentUser: jest.fn(),
       login: jest.fn(),

@@ -1,6 +1,6 @@
 import { BaseStep } from '../BaseStep';
 import { PipelineInput, PipelineOutput } from '../types';
-import { runTopicClassifierChain, TopicClassification } from '../../chains/runTopicClassifierChain';
+import { runTopicClassifierChain } from '../../chains/runTopicClassifierChain';
 
 export class TopicClassificationStep extends BaseStep {
   constructor() {

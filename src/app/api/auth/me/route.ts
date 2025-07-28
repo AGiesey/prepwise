@@ -1,8 +1,8 @@
+import { AuthError } from '@/services/auth/types';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Simple in-memory token store for development
 // In production, you'd use a proper token validation system
-const mockTokenStore = new Map<string, any>();
 
 // Mock users for development
 const mockUsers = {
@@ -52,13 +52,12 @@ export async function GET(request: NextRequest) {
       user
     });
 
-  } catch (error: any) {
-    console.error('Get current user error:', error);
-    
+  } catch (error: unknown) {
+    const authError = error as AuthError;
     return NextResponse.json(
       { 
-        error: error.message || 'Failed to get current user',
-        code: error.code || 'UNKNOWN_ERROR'
+        error: authError.message || 'Failed to get current user',
+        code: authError.code || 'UNKNOWN_ERROR'
       },
       { status: 500 }
     );

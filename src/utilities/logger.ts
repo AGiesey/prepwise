@@ -46,6 +46,7 @@ const logger = winston.createLogger({
 });
 
 // Add a method to log chain class operations
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const logChainOperation = (operation: string, data: any) => {
   //If data contains messages, format them for logging
   if (data.messages) {
@@ -60,6 +61,7 @@ export const logChainOperation = (operation: string, data: any) => {
 };
 
 // Add a method to log chain class errors
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const logChainError = (error: any, context: string) => {
   logger.error('Chain Error', {
     error: error.message || error,
@@ -69,6 +71,7 @@ export const logChainError = (error: any, context: string) => {
   });
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const logInfo = (message: string, data?: any) => {
   logger.info(message, {
     ...data,
@@ -76,6 +79,7 @@ export const logInfo = (message: string, data?: any) => {
   });
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any 
 export const logDebug = (message: string, data?: any) => {
   logger.debug(message, {
     ...data,

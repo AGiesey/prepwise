@@ -11,7 +11,7 @@ export class MockStep extends BaseStep {
     super(name);
   }
 
-  async canExecute(input: PipelineInput): Promise<boolean> {
+  async canExecute(): Promise<boolean> {
     return this.shouldExecute;
   }
 

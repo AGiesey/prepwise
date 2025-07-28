@@ -1,6 +1,6 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { AIMessage, BaseMessage, HumanMessage, trimMessages } from '@langchain/core/messages';
+import { AIMessage, HumanMessage, trimMessages } from '@langchain/core/messages';
 import { v4 as uuidv4 } from "uuid";
 import {
   START,

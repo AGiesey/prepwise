@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { usePathname } from 'next/navigation';
 
 // Define the types of pages that can have context

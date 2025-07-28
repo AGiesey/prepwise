@@ -33,11 +33,10 @@ export abstract class AuthProvider implements IAuthProvider {
   abstract verifyEmail(token: string): Promise<void>;
 
   // Utility methods
-  protected createAuthError(code: string, message: string, details?: any): AuthError {
+  protected createAuthError(code: string, message: string): AuthError {
     return {
       code,
       message,
-      details
     };
   }
 

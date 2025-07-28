@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Recipe } from '@/types/recipe';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
@@ -61,7 +61,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchRecipe = async () => {
+  const fetchRecipe = useCallback(async () => {
     try {
       const response = await fetch(`/api/recipes/${id}`);
       if (!response.ok) {
@@ -74,7 +74,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this recipe?')) {
@@ -99,7 +99,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
 
   useEffect(() => {
     fetchRecipe();
-  }, [id]);
+  }, [fetchRecipe]);
 
   if (loading) {
     return <RecipeLoadingSkeleton />;

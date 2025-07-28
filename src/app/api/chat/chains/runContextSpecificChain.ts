@@ -62,6 +62,7 @@ const memory = new MemorySaver();
 const app = workflow.compile({ checkpointer: memory });
 const config = { configurable: { thread_id: uuidv4() } };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function runContextSpecificChain(message: string, context: any) {
   try {
     currentContext = JSON.stringify(context);

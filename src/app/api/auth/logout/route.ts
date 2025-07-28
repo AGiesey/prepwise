@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { AuthService } from '@/services/auth';
+import { NextResponse } from 'next/server';
+import { AuthError, AuthService } from '@/services/auth';
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const authService = AuthService.getInstance();
     await authService.logout();
@@ -11,13 +11,12 @@ export async function POST(request: NextRequest) {
       message: 'Logout successful'
     });
 
-  } catch (error: any) {
-    console.error('Logout error:', error);
-    
+  } catch (error: unknown) {
+    const authError= error as AuthError;
     return NextResponse.json(
       { 
-        error: error.message || 'Logout failed',
-        code: error.code || 'UNKNOWN_ERROR'
+        error: authError.message || 'Logout failed',
+        code: authError.code || 'UNKNOWN_ERROR'
       },
       { status: 500 }
     );

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TopicClassification } from '../chains/runTopicClassifierChain';
 
 export interface PipelineInput {

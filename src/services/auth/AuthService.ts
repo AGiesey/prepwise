@@ -149,6 +149,7 @@ export class AuthService {
     return this.provider.name;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private handleError(error: any): AuthError {
     // Standardize error handling across providers
     if (error.code && error.message) {
@@ -158,7 +159,6 @@ export class AuthService {
     return {
       code: 'UNKNOWN_ERROR',
       message: error.message || 'An unknown error occurred',
-      details: error
     };
   }
 } 

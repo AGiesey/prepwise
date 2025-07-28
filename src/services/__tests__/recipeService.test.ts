@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { RecipeService } from '../recipeService';
 import { CreateRecipeDTO } from '@/types/dtos';
 import mockRecipesData from './mockRecipes.json';

@@ -27,7 +27,6 @@ export interface AuthSession {
 export interface AuthError {
   code: string;
   message: string;
-  details?: any;
 }
 
 export interface AuthProviderConfig {

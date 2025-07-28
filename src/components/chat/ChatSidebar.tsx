@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState, useRef, useEffect } from 'react';
+import { ReactNode, useState, useRef, useEffect, useCallback } from 'react';
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
 interface ChatSidebarProps {
@@ -25,12 +25,12 @@ export default function ChatSidebar({ isOpen, onClose, children }: ChatSidebarPr
     e.preventDefault();
   };
 
-  const stopDragging = () => {
+  const stopDragging = useCallback(() => {
     setIsDragging(false);
     document.body.classList.remove('cursor-ew-resize');
-  };
+  }, []);
 
-  const onDrag = (e: MouseEvent) => {
+  const onDrag = useCallback((e: MouseEvent) => {
     if (!isDragging || !isOpen) return;
     
     const deltaX = startX.current - e.clientX;
@@ -41,7 +41,7 @@ export default function ChatSidebar({ isOpen, onClose, children }: ChatSidebarPr
     if (newWidth >= minWidth && newWidth <= maxWidth) {
       setWidth(newWidth);
     }
-  };
+  }, [isDragging, isOpen, startX, startWidth]);
 
   useEffect(() => {
     if (isDragging) {
@@ -53,7 +53,7 @@ export default function ChatSidebar({ isOpen, onClose, children }: ChatSidebarPr
         document.body.classList.remove('cursor-ew-resize');
       };
     }
-  }, [isDragging, isOpen]);
+  }, [isDragging, isOpen, onDrag, stopDragging]);
 
   return (
     <aside 

@@ -4,7 +4,6 @@ import {
   LoginCredentials, 
   AuthUser, 
   AuthTokens, 
-  AuthError 
 } from '../types';
 
 export class MockAuthProvider extends AuthProvider {
@@ -167,6 +166,13 @@ export class MockAuthProvider extends AuthProvider {
       throw this.createAuthError(
         'USER_NOT_FOUND',
         'User not found'
+      );
+    }
+
+    if (newPassword === oldPassword) {
+      throw this.createAuthError(
+        'INVALID_PASSWORD',
+        'New password cannot be the same as the old password'
       );
     }
 
