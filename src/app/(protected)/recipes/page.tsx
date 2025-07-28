@@ -6,7 +6,7 @@ import RecipeCard from '@/components/RecipeCard';
 async function getRecipes(): Promise<Recipe[]> {
   try {
     console.log('Fetching recipes from API...');
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/recipes`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/recipes`, {
       cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',

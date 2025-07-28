@@ -3,7 +3,7 @@ import RecipeForm from '@/components/RecipeForm';
 
 async function getRecipe(id: string): Promise<Recipe> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/recipes/${id}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/recipes/${id}`, {
       cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',

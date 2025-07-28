@@ -1,14 +1,157 @@
-# Deployment Notes
+# Deployment Guide
+
+## Platform Choice
+PrepWise is deployed using **Vercel + Supabase + Upstash** for cost-effective hosting with room for growth.
+
+See [architecture/decisions/004-deployment-platform-choice.md](./architecture/decisions/004-deployment-platform-choice.md) for detailed decision rationale.
 
 ## Development
 ```bash
 docker-compose up -d
 ```
 
-## Production
+## Production Deployment
+
+### Phase 1: Initial Setup (Vercel + Supabase + Upstash)
+
+#### 1.1 Vercel Setup
 ```bash
-docker-compose --profile prod up
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy to Vercel
+vercel --prod
 ```
+
+**Environment Variables to Set:**
+```bash
+DATABASE_URL=postgresql://[supabase-connection-string]
+UPSTASH_REDIS_REST_URL=https://[your-redis-url]
+UPSTASH_REDIS_REST_TOKEN=[your-redis-token]
+NEXTAUTH_SECRET=[your-secret]
+NEXTAUTH_URL=https://[your-domain]
+```
+
+#### 1.2 Supabase Setup
+1. Create project at [supabase.com](https://supabase.com)
+2. Get connection string from Settings > Database
+3. Run migrations:
+```bash
+npx prisma db push
+npx prisma generate
+```
+
+#### 1.3 Upstash Setup
+1. Create Redis database at [upstash.com](https://upstash.com)
+2. Get REST URL and token
+3. Update environment variables
+
+### Phase 2: Monitoring & Alerts
+
+#### 2.1 Database Monitoring
+- Set up Supabase dashboard alerts
+- Monitor database size (500MB limit)
+- Track query performance
+
+#### 2.2 Redis Monitoring
+- Monitor Upstash request count (10K/day limit)
+- Set up alerts for approaching limits
+- Track memory usage patterns
+
+#### 2.3 Application Monitoring
+- Vercel Analytics for performance
+- Error tracking with Vercel
+- Function timeout monitoring (10s limit)
+
+### Phase 3: Backup Procedures
+
+#### 3.1 Database Backups
+```bash
+# Export Supabase data
+pg_dump [connection-string] > backup.sql
+
+# Automated backup script
+#!/bin/bash
+DATE=$(date +%Y%m%d_%H%M%S)
+pg_dump $DATABASE_URL > "backup_$DATE.sql"
+```
+
+#### 3.2 Redis Backups
+- Upstash provides automatic backups
+- Export data via REST API if needed
+
+### Phase 4: Migration Triggers
+
+#### 4.1 When to Migrate to Railway ($5/month)
+- Database approaching 500MB limit
+- Redis requests exceeding 10K/day
+- Want simplified single-platform management
+
+**Migration Steps:**
+1. Create Railway project
+2. Import PostgreSQL data from Supabase
+3. Set up Redis on Railway
+4. Update environment variables
+5. Deploy application
+
+#### 4.2 When to Migrate to DigitalOcean ($35-42/month)
+- Need more control over infrastructure
+- Require higher limits
+- Want managed services with more flexibility
+
+**Migration Steps:**
+1. Set up DigitalOcean App Platform
+2. Create managed PostgreSQL database
+3. Set up managed Redis
+4. Update Docker configuration
+5. Deploy with Docker
+
+#### 4.3 Hybrid Upgrades
+- Upgrade only Supabase to Pro ($25/month) for larger database
+- Upgrade only Upstash for more Redis requests
+- Keep Vercel for hosting
+
+## Environment Variables Reference
+
+### Required Variables
+```bash
+# Database
+DATABASE_URL=postgresql://[connection-string]
+
+# Redis
+UPSTASH_REDIS_REST_URL=https://[url]
+UPSTASH_REDIS_REST_TOKEN=[token]
+
+# Authentication
+NEXTAUTH_SECRET=[secret]
+NEXTAUTH_URL=https://[domain]
+
+# OpenAI (for AI features)
+OPENAI_API_KEY=[key]
+```
+
+### Optional Variables
+```bash
+# Logging
+LOG_LEVEL=info
+
+# Feature flags
+ENABLE_CHAT=true
+ENABLE_RECIPE_MODIFICATION=true
+```
+
+## Troubleshooting
+
+### Common Issues
+1. **Function Timeout**: Increase timeout or optimize code
+2. **Database Connection**: Check Supabase connection string
+3. **Redis Errors**: Verify Upstash credentials
+4. **Build Failures**: Check environment variables
+
+### Support Resources
+- [Vercel Documentation](https://vercel.com/docs)
+- [Supabase Documentation](https://supabase.com/docs)
+- [Upstash Documentation](https://docs.upstash.com)
 ```
 
 **docs/README.md**:
