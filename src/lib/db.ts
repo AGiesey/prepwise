@@ -1,7 +1,8 @@
 import { PrismaClient } from '@prisma/client'
 
+// log: ['query', 'error', 'warn'],
 const prisma = new PrismaClient({
-  log: ['query', 'error', 'warn'],
+  log: ['error', 'warn'],
 })
 
 // Test the connection
