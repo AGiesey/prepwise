@@ -20,11 +20,24 @@ const logTailSourceToken = process.env.LOGTAIL_SOURCE_TOKEN || '';
 const ingestingHost = process.env.LOGTAIL_INGESTING_HOST || '';
 const logToLogtail = process.env?.LOGTAIL_ENABLED === 'true';
 
-const transports: winston.transport[] = [
-  new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-  new winston.transports.File({ filename: 'logs/debug.log', level: 'debug' }),
-  new winston.transports.File({ filename: 'logs/combined.log' })
-]
+const transports: winston.transport[] = [];
+
+// Only add file transports in development or if explicitly enabled
+if (process.env.NODE_ENV === 'development' || process.env.ENABLE_FILE_LOGGING === 'true') {
+  transports.push(
+    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'logs/debug.log', level: 'debug' }),
+    new winston.transports.File({ filename: 'logs/combined.log' })
+  );
+}
+
+// Always add console transport for serverless environments
+transports.push(new winston.transports.Console({
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.simple()
+  )
+}));
 
 if (logToLogtail) {
   const logtail = new Logtail(logTailSourceToken, {
