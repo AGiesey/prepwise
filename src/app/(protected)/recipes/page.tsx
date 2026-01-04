@@ -3,6 +3,7 @@ import { Recipe } from '@/types/recipe';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import RecipeCard from '@/components/RecipeCard';
 import { RecipeService } from '@/services/recipeService';
+import logger from '@/utilities/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +13,10 @@ async function getRecipes(): Promise<Recipe[]> {
     const recipes = await recipeService.getAllRecipes();
     return recipes;
   } catch (error) {
-    console.error('Error fetching recipes:', error);
+    logger.error('Error fetching recipes', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return [];
   }
 }

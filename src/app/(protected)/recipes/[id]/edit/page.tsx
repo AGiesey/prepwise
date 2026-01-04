@@ -1,6 +1,7 @@
 import { Recipe } from '@/types/recipe';
 import RecipeForm from '@/components/RecipeForm';
 import { RecipeService } from '@/services/recipeService';
+import logger from '@/utilities/logger';
 
 async function getRecipe(id: string): Promise<Recipe> {
   try {
@@ -8,7 +9,10 @@ async function getRecipe(id: string): Promise<Recipe> {
     const recipe = await recipeService.getRecipe(id);
     return recipe;
   } catch (error) {
-    console.error('Error fetching recipe:', error);
+    logger.error('Error fetching recipe', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
     throw error;
   }
 }

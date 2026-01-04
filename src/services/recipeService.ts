@@ -1,11 +1,13 @@
 import { PrismaRecipe, RecipeDTO, CreateRecipeDTO, recipeInclude } from '@/types/dtos'
 import { prisma } from '@/lib/db'
+import { logDebug } from '@/utilities/logger'
+import logger from '@/utilities/logger'
 
 // Only test connection in development
 if (process.env.NODE_ENV === 'development') {
   prisma.$connect()
-    .then(() => console.log('RecipeService: Connected to database'))
-    .catch((e) => console.error('RecipeService: Failed to connect:', e))
+    .then(() => logDebug('RecipeService: Connected to database'))
+    .catch((e) => logger.error('RecipeService: Failed to connect', { error: e }))
 }
 
 export const chatRecipeInclude = {

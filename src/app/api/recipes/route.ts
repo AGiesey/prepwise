@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { RecipeService } from '@/services/recipeService'
 import { Recipe } from '@/types/recipe'
+import logger from '@/utilities/logger'
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,7 +14,10 @@ export async function GET() {
     const recipes = await recipeService.getAllRecipes()
     return NextResponse.json(recipes)
   } catch (error: unknown) {
-    console.error('Error fetching recipes:', error);
+    logger.error('Error fetching recipes', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
     
     const errorDetails = {
       message: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -38,7 +42,10 @@ export async function POST(request: Request) {
     const recipe = await recipeService.createRecipe(recipeData)
     return NextResponse.json(recipe, { status: 201 })
   } catch (error: unknown) {
-    console.error('Error creating recipe:', error);
+    logger.error('Error creating recipe', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return NextResponse.json(
       { error: 'Failed to create recipe' },
       { status: 500 }
