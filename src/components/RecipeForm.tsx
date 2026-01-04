@@ -183,7 +183,7 @@ export default function RecipeForm({ initialData, isEditing = false }: RecipeFor
             <button
               type="button"
               onClick={addIngredient}
-              className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+              className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 cursor-pointer"
             >
               Add
             </button>
@@ -219,7 +219,7 @@ export default function RecipeForm({ initialData, isEditing = false }: RecipeFor
                     newIngredients.splice(index, 1);
                     setFormData(prev => ({ ...prev, ingredients: newIngredients }));
                   }}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-red-500 hover:text-red-700 cursor-pointer"
                 >
                   Remove
                 </button>
@@ -241,7 +241,7 @@ export default function RecipeForm({ initialData, isEditing = false }: RecipeFor
             <button
               type="button"
               onClick={addInstruction}
-              className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+              className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 cursor-pointer"
             >
               Add
             </button>
@@ -258,7 +258,7 @@ export default function RecipeForm({ initialData, isEditing = false }: RecipeFor
                     newInstructions.splice(index, 1);
                     setFormData(prev => ({ ...prev, instructions: newInstructions }));
                   }}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-red-500 hover:text-red-700 cursor-pointer"
                 >
                   Remove
                 </button>
@@ -294,13 +294,13 @@ export default function RecipeForm({ initialData, isEditing = false }: RecipeFor
           <button
             type="button"
             onClick={() => router.push('/recipes')}
-            className="px-4 py-2 border rounded hover:bg-gray-100"
+            className="px-4 py-2 border rounded hover:bg-gray-100 cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+            className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 cursor-pointer"
           >
             {isEditing ? 'Update Recipe' : 'Create Recipe'}
           </button>
