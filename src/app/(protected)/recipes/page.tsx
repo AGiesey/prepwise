@@ -2,22 +2,13 @@ import Link from 'next/link';
 import { Recipe } from '@/types/recipe';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import RecipeCard from '@/components/RecipeCard';
+import { RecipeService } from '@/services/recipeService';
 
 async function getRecipes(): Promise<Recipe[]> {
   try {
-    console.log('Fetching recipes from API...');
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/recipes`, {
-      cache: 'no-store',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch recipes');
-    }
-    
-    const recipes = await response.json();
+    console.log('Fetching recipes from service...');
+    const recipeService = new RecipeService();
+    const recipes = await recipeService.getAllRecipes();
     console.log('Successfully fetched recipes:', recipes.length);
     return recipes;
   } catch (error) {

@@ -1,20 +1,12 @@
 import { Recipe } from '@/types/recipe';
 import RecipeForm from '@/components/RecipeForm';
+import { RecipeService } from '@/services/recipeService';
 
 async function getRecipe(id: string): Promise<Recipe> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/recipes/${id}`, {
-      cache: 'no-store',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch recipe');
-    }
-    
-    return await response.json();
+    const recipeService = new RecipeService();
+    const recipe = await recipeService.getRecipe(id);
+    return recipe;
   } catch (error) {
     console.error('Error fetching recipe:', error);
     throw error;
