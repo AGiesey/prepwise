@@ -10,6 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
+    "build:static": "next build && next export",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
