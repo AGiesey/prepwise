@@ -22,6 +22,10 @@ COPY --from=deps /app/node_modules/.prisma ./node_modules/.prisma
 # Learn more here: https://nextjs.org/telemetry
 ENV NEXT_TELEMETRY_DISABLED 1
 
+# Set a dummy DATABASE_URL for build time (Prisma needs it during build analysis)
+# This will be overridden at runtime with the actual DATABASE_URL
+ENV DATABASE_URL="postgresql://dummy:dummy@dummy:5432/dummy"
+
 RUN yarn build
 
 # Production image, copy all the files and run next

@@ -2,13 +2,9 @@
 import { PrismaClient } from '@prisma/client'
 
 // Create Prisma client with connection pooling for production
+// Prisma automatically reads DATABASE_URL from environment based on schema.prisma
 const prisma = new PrismaClient({
   log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL
-    }
-  }
 })
 
 // Only test connection in development
