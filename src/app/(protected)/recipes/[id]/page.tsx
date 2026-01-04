@@ -133,14 +133,14 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
           <div className="flex gap-2 ml-5">
             <button
               onClick={() => router.push(`/recipes/${id}/edit`)}
-              className="p-1.5 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+              className="p-1.5 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 cursor-pointer"
               title="Edit recipe"
             >
               <PencilIcon className="h-5 w-5" />
             </button>
             <button
               onClick={handleDelete}
-              className="p-1.5 bg-red-100 text-red-600 rounded hover:bg-red-200"
+              className="p-1.5 bg-red-100 text-red-600 rounded hover:bg-red-200 cursor-pointer"
               title="Delete recipe"
             >
               <TrashIcon className="h-5 w-5" />

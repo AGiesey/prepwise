@@ -76,7 +76,7 @@ export default function ChatSidebar({ isOpen, onClose, children }: ChatSidebarPr
           </div>
           <button 
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-full text-black transition-colors duration-200"
+            className="p-1 hover:bg-gray-100 rounded-full text-black transition-colors duration-200 cursor-pointer"
           >
             <XMarkIcon className="h-5 w-5" />
           </button>

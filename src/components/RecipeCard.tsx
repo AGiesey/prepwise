@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Recipe } from '@/types/recipe';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
@@ -9,9 +10,27 @@ interface RecipeCardProps {
 }
 
 export default function RecipeCard({ recipe }: RecipeCardProps) {
+  const router = useRouter();
+
   const handleDelete = async () => {
-    // TODO: Implement delete functionality
-    console.log('Delete recipe:', recipe.id);
+    if (!confirm('Are you sure you want to delete this recipe?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/recipes/${recipe.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete recipe');
+      }
+
+      // Refresh the page to update the recipe list
+      router.refresh();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete recipe');
+    }
   };
 
   return (
@@ -41,7 +60,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         </Link>
         <button
           onClick={handleDelete}
-          className="p-1.5 bg-red-100 text-red-600 rounded hover:bg-red-200"
+          className="p-1.5 bg-red-100 text-red-600 rounded hover:bg-red-200 cursor-pointer"
           title="Delete recipe"
         >
           <TrashIcon className="h-4 w-4" />

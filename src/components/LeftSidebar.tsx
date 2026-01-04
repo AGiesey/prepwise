@@ -54,7 +54,7 @@ export default function LeftSidebar() {
         {!isCollapsed && <h1 className="text-xl font-bold">PrepWise</h1>}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-2 rounded-md hover:bg-gray-200 transition-colors"
+          className="p-2 rounded-md hover:bg-gray-200 transition-colors cursor-pointer"
         >
           {isCollapsed ? (
             <ChevronRightIcon className="h-5 w-5" />
@@ -106,7 +106,7 @@ export default function LeftSidebar() {
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className={`w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
               isCollapsed ? 'flex justify-center' : ''
             }`}
           >
