@@ -1,75 +1,138 @@
+/* eslint-disable */
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import net from 'net';
+import { RecipeService } from '@/services/recipeService';
 
 export const runtime = "nodejs";
 
-export async function GET() {
-  try {
-    // First test basic TCP connectivity
-    console.log('Testing TCP connectivity...');
-    const canConnect = await testTcpConnection('db.xlcqdxahfeixmohmynad.supabase.co', 5432);
-    
-    if (!canConnect) {
-      // Test if we can reach any external service
-      const canReachGoogle = await testTcpConnection('google.com', 80);
-      
-      return NextResponse.json({
-        status: 'unhealthy',
-        database: 'disconnected',
-        error: 'Cannot establish TCP connection to database server',
-        canReachExternal: canReachGoogle,
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV
-      }, { status: 500 });
-    }
-
-    // Test database connection
-    console.log('Testing database connection...');
-    await prisma.$queryRaw`SELECT 1`;
-    
-    return NextResponse.json({
-      status: 'healthy',
-      database: 'connected',
-      tcpConnection: 'successful',
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV
-    });
-  } catch (error) {
-    console.error('Database health check failed:', error);
-    
-    return NextResponse.json({
-      status: 'unhealthy',
-      database: 'disconnected',
-      error: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV
-    }, { status: 500 });
-  }
+interface HealthCheckResult {
+  timestamp: string;
+  environment: string | undefined;
+  databaseUrl?: {
+    exists: boolean;
+    hasUser: boolean;
+    hasHost: boolean;
+    hasDatabase: boolean;
+    hostPreview?: string;
+    userPreview?: string;
+    databasePreview?: string;
+  };
+  tests: {
+    prismaConnection?: {
+      success: boolean;
+      error?: string;
+      duration?: number;
+    };
+    readTest?: {
+      success: boolean;
+      error?: string;
+      duration?: number;
+      recipeCount?: number;
+    };
+  };
+  summary: {
+    overall: 'healthy' | 'unhealthy' | 'degraded';
+    details: string[];
+  };
 }
 
-function testTcpConnection(host: string, port: number): Promise<boolean> {
-  return new Promise((resolve) => {
-    const socket = new net.Socket();
-    const timeout = 5000; // 5 seconds
+export async function GET() {
+  const result: HealthCheckResult = {
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    tests: {},
+    summary: {
+      overall: 'unhealthy',
+      details: []
+    }
+  };
+
+  // Parse DATABASE_URL for info (without exposing password)
+  const dbUrl = process.env.DATABASE_URL;
+  if (dbUrl) {
+    try {
+      const url = new URL(dbUrl);
+      result.databaseUrl = {
+        exists: true,
+        hasUser: !!url.username,
+        hasHost: !!url.hostname,
+        hasDatabase: !!url.pathname && url.pathname.length > 1,
+        hostPreview: url.hostname ? `${url.hostname.substring(0, 20)}...` : undefined,
+        userPreview: url.username ? `${url.username.substring(0, 10)}...` : undefined,
+        databasePreview: url.pathname ? url.pathname.substring(1).substring(0, 20) : undefined,
+      };
+      result.summary.details.push('DATABASE_URL environment variable is set');
+    } catch (e) {
+      result.databaseUrl = { exists: true, hasUser: false, hasHost: false, hasDatabase: false };
+      result.summary.details.push('DATABASE_URL exists but is malformed');
+    }
+  } else {
+    result.databaseUrl = { exists: false, hasUser: false, hasHost: false, hasDatabase: false };
+    result.summary.details.push('DATABASE_URL environment variable is NOT set');
+  }
+
+  // Test 1: Prisma Connection
+  try {
+    const testStart = Date.now();
+    await prisma.$queryRaw`SELECT 1 as test`;
+    const testDuration = Date.now() - testStart;
     
-    socket.setTimeout(timeout);
+    result.tests.prismaConnection = {
+      success: true,
+      duration: testDuration
+    };
+    result.summary.details.push(`Prisma connection test: SUCCESS (${testDuration}ms)`);
+  } catch (error) {
+    const testDuration = Date.now() - (result.tests.prismaConnection?.duration || Date.now());
+    const errorMessage = error instanceof Error ? error.message : String(error);
     
-    socket.on('connect', () => {
-      socket.destroy();
-      resolve(true);
-    });
+    result.tests.prismaConnection = {
+      success: false,
+      error: errorMessage,
+      duration: testDuration
+    };
+    result.summary.details.push(`Prisma connection test: FAILED - ${errorMessage}`);
     
-    socket.on('timeout', () => {
-      socket.destroy();
-      resolve(false);
-    });
+    // Return early if basic connection fails
+    return NextResponse.json(result, { status: 500 });
+  }
+
+  // Test 2: Read Test (fetch recipes)
+  try {
+    const testStart = Date.now();
+    const recipeService = new RecipeService();
+    const recipes = await recipeService.getAllRecipes();
+    const testDuration = Date.now() - testStart;
     
-    socket.on('error', () => {
-      socket.destroy();
-      resolve(false);
-    });
+    result.tests.readTest = {
+      success: true,
+      duration: testDuration,
+      recipeCount: recipes.length
+    };
+    result.summary.details.push(`Read test (getAllRecipes): SUCCESS - Found ${recipes.length} recipes (${testDuration}ms)`);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     
-    socket.connect(port, host);
-  });
+    result.tests.readTest = {
+      success: false,
+      error: errorMessage,
+      duration: 0
+    };
+    result.summary.details.push(`Read test (getAllRecipes): FAILED - ${errorMessage}`);
+  }
+
+  // Determine overall status
+  const allTestsPassed = result.tests.prismaConnection?.success && result.tests.readTest?.success;
+  const basicConnectionWorks = result.tests.prismaConnection?.success;
+  
+  if (allTestsPassed) {
+    result.summary.overall = 'healthy';
+  } else if (basicConnectionWorks) {
+    result.summary.overall = 'degraded';
+  } else {
+    result.summary.overall = 'unhealthy';
+  }
+
+  const statusCode = result.summary.overall === 'healthy' ? 200 : 500;
+  return NextResponse.json(result, { status: statusCode });
 } 
