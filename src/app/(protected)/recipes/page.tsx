@@ -4,24 +4,40 @@ import { PlusIcon } from '@heroicons/react/24/outline';
 import RecipeCard from '@/components/RecipeCard';
 import { RecipeService } from '@/services/recipeService';
 
+export const dynamic = 'force-dynamic';
+
 async function getRecipes(): Promise<Recipe[]> {
   try {
-    console.log('Fetching recipes from service...');
+    console.log('[RecipesPage] Fetching recipes from service...');
     const recipeService = new RecipeService();
     const recipes = await recipeService.getAllRecipes();
-    console.log('Successfully fetched recipes:', recipes.length);
+    console.log('[RecipesPage] Successfully fetched recipes:', recipes.length);
+    console.log('[RecipesPage] Recipes data:', JSON.stringify(recipes, null, 2));
+    console.log('[RecipesPage] First recipe sample:', recipes[0] ? JSON.stringify(recipes[0], null, 2) : 'No recipes');
     return recipes;
   } catch (error) {
-    console.error('Error fetching recipes:', error);
+    console.error('[RecipesPage] Error fetching recipes:', error);
+    if (error instanceof Error) {
+      console.error('[RecipesPage] Error message:', error.message);
+      console.error('[RecipesPage] Error stack:', error.stack);
+    }
     return [];
   }
 }
 
 export default async function RecipesPage() {
-  const recipes = await getRecipes();
+  console.log('[RecipesPage] ===== PAGE RENDERING STARTED =====');
+  try {
+    const recipes = await getRecipes();
+    console.log('[RecipesPage] Rendering with', recipes.length, 'recipes');
+    console.log('[RecipesPage] Recipes array length:', recipes.length);
+    if (recipes.length > 0) {
+      console.log('[RecipesPage] First recipe ID:', recipes[0].id);
+      console.log('[RecipesPage] First recipe title:', recipes[0].title);
+    }
 
-  return (
-    <div className="p-8 bg-background">
+    return (
+      <div className="p-8 bg-background">
       <div className="flex justify-start items-center mb-8 ">
         <h1 className="text-3xl font-bold">Recipes</h1>
         <Link 
@@ -31,6 +47,13 @@ export default async function RecipesPage() {
         >
           <PlusIcon className="h-5 w-5 " />
         </Link>
+      </div>
+
+      {/* DEBUG: Show count */}
+      <div className="mb-4 p-2 bg-yellow-100 border border-yellow-400 rounded">
+        <p className="text-sm text-yellow-800">
+          DEBUG: recipes.length = {recipes.length} | Timestamp: {new Date().toISOString()}
+        </p>
       </div>
 
       {recipes.length === 0 ? (
@@ -45,5 +68,9 @@ export default async function RecipesPage() {
         </div>
       )}
     </div>
-  );
+    );
+  } catch (error) {
+    console.error('[RecipesPage] ===== PAGE RENDERING ERROR =====', error);
+    throw error;
+  }
 } 

@@ -123,11 +123,26 @@ export class RecipeService {
 
   // Get all recipes
   async getAllRecipes() {
+    console.log('[RecipeService] getAllRecipes: Starting...');
     const recipes = await prisma.recipe.findMany({
       include: recipeInclude
     })
-
-    return recipes.map(recipe => this.formatRecipeForResponse(recipe))
+    console.log('[RecipeService] getAllRecipes: Found', recipes.length, 'recipes from database');
+    
+    const formattedRecipes = recipes.map((recipe, index) => {
+      try {
+        console.log(`[RecipeService] getAllRecipes: Formatting recipe ${index + 1}/${recipes.length} (id: ${recipe.id})`);
+        const formatted = this.formatRecipeForResponse(recipe);
+        console.log(`[RecipeService] getAllRecipes: Successfully formatted recipe ${index + 1}`);
+        return formatted;
+      } catch (error) {
+        console.error(`[RecipeService] getAllRecipes: Error formatting recipe ${index + 1} (id: ${recipe.id}):`, error);
+        throw error;
+      }
+    });
+    
+    console.log('[RecipeService] getAllRecipes: Returning', formattedRecipes.length, 'formatted recipes');
+    return formattedRecipes;
   }
 
   // Update a recipe
@@ -224,8 +239,11 @@ export class RecipeService {
 
   // Helper function to format recipe for response
   private formatRecipeForResponse(recipe: PrismaRecipe): RecipeDTO {
+    console.log(`[RecipeService] formatRecipeForResponse: Formatting recipe ${recipe.id}`);
+    console.log(`[RecipeService] formatRecipeForResponse: Has nutritionInfo:`, !!recipe.nutritionInfo);
     if (!recipe.nutritionInfo) {
-      throw new Error('Recipe must have nutrition info')
+      console.error(`[RecipeService] formatRecipeForResponse: Recipe ${recipe.id} missing nutritionInfo`);
+      throw new Error(`Recipe ${recipe.id} must have nutrition info`)
     }
     
     return {
