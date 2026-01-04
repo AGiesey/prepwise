@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { RecipeService } from '@/services/recipeService'
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 const recipeService = new RecipeService()
 
 export async function GET(
