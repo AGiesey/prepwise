@@ -4,14 +4,12 @@ FROM node:20-alpine AS base
 FROM base AS deps
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+# Copy package files and Prisma schema first
 COPY package.json yarn.lock* ./
-RUN yarn install --frozen-lockfile
-
-# Install Prisma and generate client
-RUN yarn add -D prisma
 COPY prisma ./prisma
-RUN npx prisma generate
+
+# Install dependencies (this will also run postinstall which generates Prisma client)
+RUN yarn install --frozen-lockfile
 
 # Rebuild the source code only when needed
 FROM base AS builder
