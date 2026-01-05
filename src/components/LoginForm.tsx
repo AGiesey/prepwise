@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button/Button';
+import { Button } from '@/components/ui/button';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -72,6 +72,7 @@ export default function LoginForm() {
         <Button
           type="submit"
           disabled={isLoggingIn}
+          className="w-full"
         >
           {isLoggingIn ? 'Signing in...' : 'Sign in'}
         </Button>
