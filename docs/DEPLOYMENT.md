@@ -1,9 +1,7 @@
 # Deployment Guide
 
 ## Platform Choice
-PrepWise is deployed using **Vercel + Supabase + Upstash** for cost-effective hosting with room for growth.
-
-See [architecture/decisions/004-deployment-platform-choice.md](./architecture/decisions/004-deployment-platform-choice.md) for detailed decision rationale.
+PrepWise is currently deployed on Render.
 
 ## Development
 ```bash

@@ -101,9 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
       
-      // Set a cookie for middleware to detect authentication
-      document.cookie = `auth-token=${data.tokens?.accessToken || 'authenticated'}; path=/; max-age=3600; SameSite=Lax`;
-      
+      // Cookie is now set server-side in the API route, so it's available to middleware immediately
       // Use replace to avoid back button issues
       router.replace('/dashboard');
     } catch (error: unknown) {

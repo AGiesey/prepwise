@@ -73,6 +73,24 @@ export class ChatPipeline {
           ...stepOutput
         };
 
+        // Check if step wants to stop pipeline execution early
+        // This is useful for action steps like recipe creation that should short-circuit
+        if (stepOutput.metadata?.stopPipeline === true) {
+          if (this.config.enableLogging) {
+            logDebug('PIPELINE_STOPPED_EARLY', {
+              sessionId,
+              stepName: step.name,
+              reason: 'Step requested pipeline stop'
+            });
+          }
+          
+          // Return early with the step's result
+          return {
+            ...currentInput,
+            result: currentInput.result || stepOutput.result
+          };
+        }
+
         // Handle step errors
         if (stepOutput.error && this.config.enableErrorHandling) {
           logChainError(new Error(stepOutput.error), `pipeline-step-${step.name}`);
