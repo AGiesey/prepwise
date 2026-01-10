@@ -2,6 +2,7 @@ import { logDebug } from '@/utilities/logger';
 import { RecipeService } from '@/services/recipeService';
 import { transformRecipeForChat } from './recipeTransformer';
 import { ChatPipelineFactory } from './pipeline';
+import { PipelineOutput } from './pipeline/types';
 
 export class ChatService {
   private recipeService: RecipeService;
@@ -18,7 +19,7 @@ export class ChatService {
     return null;
   }
 
-  async processMessage(message: string, type?: string, id?: string): Promise<{ result: string; metadata?: Record<string, any> }> {
+  async processMessage(message: string, type?: string, id?: string): Promise<Pick<PipelineOutput, 'result' | 'metadata'>> {
     // Guard against empty messages
     if (!message || message.trim() === '') {
       return { result: "Please provide a message to process." };
