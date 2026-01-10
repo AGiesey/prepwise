@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Recipe } from '@/types/recipe';
 
@@ -31,6 +31,13 @@ export default function RecipeForm({ initialData, isEditing = false }: RecipeFor
     dietary: {},
     tags: []
   });
+
+  // Update formData when initialData changes (e.g., when loaded from sessionStorage)
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
 
   const [ingredientInput, setIngredientInput] = useState('');
   const [instructionInput, setInstructionInput] = useState('');
