@@ -18,10 +18,10 @@ export class ChatService {
     return null;
   }
 
-  async processMessage(message: string, type?: string, id?: string) {
+  async processMessage(message: string, type?: string, id?: string): Promise<{ result: string; metadata?: Record<string, any> }> {
     // Guard against empty messages
     if (!message || message.trim() === '') {
-      return "Please provide a message to process.";
+      return { result: "Please provide a message to process." };
     }
 
     // Get contextual items if available
@@ -53,6 +53,9 @@ export class ChatService {
     // Execute pipeline
     const result = await pipeline.execute(pipelineInput);
     
-    return result.result;
+    return {
+      result: result.result,
+      metadata: result.metadata
+    };
   }
 } 

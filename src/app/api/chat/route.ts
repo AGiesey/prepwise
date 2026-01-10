@@ -48,7 +48,10 @@ export async function POST(request: Request): Promise<NextResponse<{ message: Me
     const response = await chatService.processMessage(message, type, id);
     logInfo('Message processed successfully');
 
-    return NextResponse.json({ message: response });
+    return NextResponse.json({ 
+      message: response.result,
+      metadata: response.metadata
+    });
   } catch (error) {
     logger.error('Chat API error', {
       error: error instanceof Error ? error.message : String(error),

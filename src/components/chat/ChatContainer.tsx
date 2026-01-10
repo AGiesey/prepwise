@@ -8,6 +8,7 @@ import ChatForm from './ChatForm';
 import { useMessages } from '@/utilities/useMessages';
 import { MessageRole } from '@/types/message';
 import { useChatContext } from './utils/chatContext';
+import { CreateRecipeDTO } from '@/types/dtos';
 
 export const ChatContext = createContext<{
   isOpen: boolean;
@@ -24,6 +25,7 @@ export default function ChatContainer() {
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showTyping, setShowTyping] = useState(false);
+  const [recipeData, setRecipeData] = useState<CreateRecipeDTO | null>(null);
   const { messages, setMessages } = useMessages();
   const { type, id } = useChatContext();
 
@@ -34,6 +36,7 @@ export default function ChatContainer() {
     setMessage('');
     setIsLoading(true);
     setShowTyping(false);
+    setRecipeData(null); // Clear previous recipe data
 
     // Add a small delay before showing the typing indicator
     const typingTimer = setTimeout(() => {
@@ -51,6 +54,14 @@ export default function ChatContainer() {
 
       const data = await response.json();
       setMessages(prev => [...prev, { role: MessageRole.ASSISTANT, content: data.message }]);
+      
+      // Check if response contains recipe data
+      if (data.metadata?.recipeData) {
+        const recipe = data.metadata.recipeData as CreateRecipeDTO;
+        setRecipeData(recipe);
+        // Console.log the JSON response in browser
+        console.log('Recipe Creation JSON Response:', JSON.stringify(recipe, null, 2));
+      }
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
@@ -77,6 +88,8 @@ export default function ChatContainer() {
           message={message}
           onMessageChange={setMessage}
           onSubmit={handleSendMessage}
+          recipeData={recipeData}
+          onRecipeDataClear={() => setRecipeData(null)}
         />
       </ChatSidebar>
     </ChatContext.Provider>
