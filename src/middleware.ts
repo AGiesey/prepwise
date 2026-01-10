@@ -6,8 +6,6 @@ const protectedRoutes = [
   '/dashboard',
   '/recipes/new',
   '/recipes/edit',
-  '/api/recipes',
-  '/api/auth/me'
 ];
 
 // Routes that should redirect to dashboard if already authenticated
@@ -15,8 +13,9 @@ const authRoutes = [
   '/login'
 ];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const providerType = process.env.AUTH_PROVIDER || 'mock';
 
   // Check if the route requires authentication
   const isProtectedRoute = protectedRoutes.some(route => 
@@ -27,14 +26,30 @@ export function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  // Check for authentication token in cookies
-  // We'll use a simple approach for now - in production you'd validate JWT tokens
-  const authToken = request.cookies.get('auth-token')?.value;
-  const isAuthenticated = !!authToken;
+  // Skip Auth0 API routes - they handle their own auth
+  if (pathname.startsWith('/api/auth/') && providerType.toLowerCase() === 'auth0') {
+    return NextResponse.next();
+  }
 
-  // For API routes, let them handle their own authentication
+  // Skip API routes - let them handle their own authentication
   if (pathname.startsWith('/api/')) {
     return NextResponse.next();
+  }
+
+  let isAuthenticated = false;
+
+  // Check authentication based on provider
+  if (providerType.toLowerCase() === 'auth0') {
+    // For Auth0, check for session cookie (Auth0 SDK uses appSession cookie)
+    // The cookie name may vary, so check common patterns
+    const hasAuth0Session = request.cookies.get('appSession')?.value || 
+                           request.cookies.get('appSession.0')?.value ||
+                           request.cookies.get('a0:session')?.value;
+    isAuthenticated = !!hasAuth0Session;
+  } else {
+    // For other providers, check auth-token cookie
+    const authToken = request.cookies.get('auth-token')?.value;
+    isAuthenticated = !!authToken;
   }
 
   // Redirect to login if accessing protected route without authentication
