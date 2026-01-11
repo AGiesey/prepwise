@@ -2,24 +2,28 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 export default function ProtectedRoute({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated } = useAuth();
+  const { user, isLoading } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isLoading && !user) {
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [user, isLoading, router]);
 
-  if (!isAuthenticated) {
+  if (isLoading) {
     return null; // or a loading spinner
+  }
+
+  if (!user) {
+    return null;
   }
 
   return <>{children}</>;

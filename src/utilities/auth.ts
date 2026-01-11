@@ -1,62 +1,80 @@
-import { AuthUser } from '@/services/auth';
+import { User } from '@auth0/nextjs-auth0';
+
+// Helper to get roles from Auth0 user (roles are typically in a custom claim)
+function getUserRoles(user: User | null | undefined): string[] {
+  if (!user) {
+    return [];
+  }
+  
+  // Auth0 roles are typically stored in a custom claim like 'https://your-domain/roles'
+  // or in the 'roles' property if configured
+  // You may need to adjust this based on your Auth0 configuration
+  const roles = (user as any)['https://your-domain/roles'] || (user as any).roles || [];
+  return Array.isArray(roles) ? roles : [];
+}
 
 /**
  * Check if a user has a specific role
  */
-export function hasRole(user: AuthUser | null, role: string): boolean {
-  if (!user || !user.roles) {
+export function hasRole(user: User | null | undefined, role: string): boolean {
+  if (!user) {
     return false;
   }
-  return user.roles.includes(role);
+  const roles = getUserRoles(user);
+  return roles.includes(role);
 }
 
 /**
  * Check if a user has any of the specified roles
  */
-export function hasAnyRole(user: AuthUser | null, roles: string[]): boolean {
-  if (!user || !user.roles) {
+export function hasAnyRole(user: User | null | undefined, roles: string[]): boolean {
+  if (!user) {
     return false;
   }
-  return user.roles.some(role => roles.includes(role));
+  const userRoles = getUserRoles(user);
+  return userRoles.some(role => roles.includes(role));
 }
 
 /**
  * Check if a user has all of the specified roles
  */
-export function hasAllRoles(user: AuthUser | null, roles: string[]): boolean {
-  if (!user || !user.roles) {
+export function hasAllRoles(user: User | null | undefined, roles: string[]): boolean {
+  if (!user) {
     return false;
   }
-  return roles.every(role => user.roles.includes(role));
+  const userRoles = getUserRoles(user);
+  return roles.every(role => userRoles.includes(role));
 }
 
 /**
  * Check if a user is an admin
  */
-export function isAdmin(user: AuthUser | null): boolean {
+export function isAdmin(user: User | null | undefined): boolean {
   return hasRole(user, 'admin');
 }
 
 /**
  * Check if a user is a regular user
  */
-export function isUser(user: AuthUser | null): boolean {
+export function isUser(user: User | null | undefined): boolean {
   return hasRole(user, 'user');
 }
 
 /**
  * Get user's highest privilege level
  */
-export function getUserPrivilegeLevel(user: AuthUser | null): 'admin' | 'user' | 'none' {
-  if (!user || !user.roles) {
+export function getUserPrivilegeLevel(user: User | null | undefined): 'admin' | 'user' | 'none' {
+  if (!user) {
     return 'none';
   }
   
-  if (user.roles.includes('admin')) {
+  const roles = getUserRoles(user);
+  
+  if (roles.includes('admin')) {
     return 'admin';
   }
   
-  if (user.roles.includes('user')) {
+  if (roles.includes('user')) {
     return 'user';
   }
   
@@ -65,8 +83,9 @@ export function getUserPrivilegeLevel(user: AuthUser | null): 'admin' | 'user' |
 
 /**
  * Check if a user can access a resource (basic ownership check)
+ * Uses Auth0's 'sub' (subject) as the user ID
  */
-export function canAccessResource(user: AuthUser | null, resourceUserId?: string): boolean {
+export function canAccessResource(user: User | null | undefined, resourceUserId?: string): boolean {
   if (!user) {
     return false;
   }
@@ -77,5 +96,6 @@ export function canAccessResource(user: AuthUser | null, resourceUserId?: string
   }
   
   // Users can only access their own resources
-  return resourceUserId === user.id;
+  // Auth0 uses 'sub' as the user identifier
+  return resourceUserId === user.sub;
 } 

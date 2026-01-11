@@ -12,6 +12,7 @@ import {
   ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import Tooltip from './Tooltip';
+import UserWidget from './widgets/UserWidget';
 
 interface NavItem {
   href: string;
@@ -27,23 +28,8 @@ const navItems: NavItem[] = [
 ];
 
 export default function LeftSidebar() {
-  // const { user, logout } = useAuth();
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-  const handleLogout = async () => {
-    if (isLoggingOut) return;
-    
-    try {
-      setIsLoggingOut(true);
-      //await logout();
-    } catch (error) {
-      console.error('Logout failed:', error);
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
 
   return (
     <div className={`bg-gray-50 border-r border-gray-200 flex flex-col h-full transition-all duration-300 ${
@@ -87,6 +73,7 @@ export default function LeftSidebar() {
         </ul>
       </nav>
 
+      <UserWidget isCollapsed={isCollapsed} />
     </div>
   );
 }
