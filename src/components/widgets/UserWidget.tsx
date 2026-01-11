@@ -25,7 +25,9 @@ export default function UserWidget({ isCollapsed = false }: UserWidgetProps) {
 
   if (!user) {
     return null;
-  }
+  } else (
+    console.log("USER", user)
+  )
 
   const displayName = user.name || user.email || 'User';
 
