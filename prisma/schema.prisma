@@ -11,6 +11,8 @@ model User {
   id                String   @id @default(uuid())
   email             String   @unique
   name              String?
+  firstName         String?
+  lastName          String?
   externalId        String?  @unique  // ID from auth provider
   authProvider      String?  // "fusionauth", "cognito", etc.
   emailVerified     Boolean  @default(false)
@@ -19,7 +21,7 @@ model User {
   updatedAt         DateTime @updatedAt
   
   // Relations
-  recipes           Recipe[]
+  createdRecipes    Recipe[]                     @relation("RecipeCreatedBy")
 }
 
 model Recipe {
@@ -30,13 +32,13 @@ model Recipe {
   prepTime            Int
   cookTime            Int
   totalTime           Int
-  userId              String?                    // Owner of the recipe
+  createdBy           String                     // User who created the recipe
   isPublic            Boolean                    @default(false)
   createdAt           DateTime                   @default(now())
   updatedAt           DateTime                   @updatedAt
   
   // Relations
-  user                User?                      @relation(fields: [userId], references: [id])
+  createdByUser       User                       @relation("RecipeCreatedBy", fields: [createdBy], references: [id])
   nutritionInfo       NutritionInfo?
   dietaryRestrictions RecipeDietaryRestriction[]
   ingredients         RecipeIngredient[]

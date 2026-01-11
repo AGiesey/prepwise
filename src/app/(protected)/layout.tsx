@@ -1,7 +1,8 @@
-import { AuthLayout } from '@/components/AuthLayout';
 import LeftSidebar from '@/components/LeftSidebar';
 import ChatContainer from '@/components/chat/ChatContainer';
 import MainContentWrapper from '@/components/chat/MainContentWrapper';
+import UserSync from '@/components/UserSync';
+import { UserProvider } from '@/utilities/useUser';
 
 export default function ProtectedLayout({
   children,
@@ -9,8 +10,9 @@ export default function ProtectedLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthLayout>
+    <UserProvider>
       <div className="flex h-screen">
+        <UserSync />
         <LeftSidebar />
         <div className="flex-1 flex">
           <MainContentWrapper>
@@ -19,6 +21,6 @@ export default function ProtectedLayout({
           <ChatContainer />
         </div>
       </div>
-    </AuthLayout>
+    </UserProvider>
   );
 } 

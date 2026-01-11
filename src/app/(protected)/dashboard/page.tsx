@@ -2,7 +2,6 @@ import RecipeStatsWidget from "@/components/widgets/RecipeStatsWidget";
 import RecentRecipesWidget from "@/components/widgets/RecentRecipesWidget";
 import MealPlanWidget from "@/components/widgets/MealPlanWidget";
 import QuickActionsWidget from "@/components/widgets/QuickActionsWidget";
-import UserProfile from "@/components/UserProfile";
 
 export default function DashboardPage() {
   const stats = [
@@ -35,8 +34,6 @@ export default function DashboardPage() {
           <MealPlanWidget meals={mealPlan} />
         </div>
         
-        {/* User Profile - full width */}
-        <UserProfile />
         
         {/* Quick Actions */}
         <QuickActionsWidget />

@@ -11,6 +11,7 @@ async function getRecipes(): Promise<Recipe[]> {
   try {
     const recipeService = new RecipeService();
     const recipes = await recipeService.getAllRecipes();
+    console.log("RECIPES", recipes);
     return recipes;
   } catch (error) {
     logger.error('Error fetching recipes', {
