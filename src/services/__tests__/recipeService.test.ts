@@ -115,7 +115,7 @@ describe('RecipeService', () => {
       // Mock recipe creation
       mockPrisma.recipe.create.mockResolvedValue(mockCreatedRecipe as any);
 
-      const result = await recipeService.createRecipe(mockCreateRecipeData);
+      const result = await recipeService.createRecipe(mockCreateRecipeData, 'user-123');
 
       expect(mockPrisma.ingredient.findFirst).toHaveBeenCalledTimes(2);
       expect(mockPrisma.ingredient.create).toHaveBeenCalledTimes(2);
@@ -127,6 +127,7 @@ describe('RecipeService', () => {
           prepTime: 15,
           cookTime: 30,
           totalTime: 45,
+          createdBy: 'user-123',
           ingredients: {
             create: [
               {
@@ -203,7 +204,7 @@ describe('RecipeService', () => {
       // Mock recipe creation
       mockPrisma.recipe.create.mockResolvedValue(mockCreatedRecipe as any);
 
-      const result = await recipeService.createRecipe(mockCreateRecipeData);
+      const result = await recipeService.createRecipe(mockCreateRecipeData, 'user-123');
 
       expect(mockPrisma.ingredient.findFirst).toHaveBeenCalledTimes(2);
       expect(mockPrisma.ingredient.create).not.toHaveBeenCalled();

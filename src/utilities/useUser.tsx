@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useContext, createContext, useState, useEffect } from 'react';
+import React, { useContext, createContext, useState, useEffect, useCallback } from 'react';
 import { useUser as useAuth0User } from '@auth0/nextjs-auth0/client';
 
 interface DatabaseUser {
@@ -30,7 +30,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<DatabaseUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     if (!auth0User) {
       setUser(null);
       setIsLoading(false);
@@ -52,17 +52,17 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [auth0User]);
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     await fetchUser();
-  };
+  }, [fetchUser]);
 
   useEffect(() => {
     if (!auth0Loading) {
       fetchUser();
     }
-  }, [auth0User, auth0Loading]);
+  }, [auth0User, auth0Loading, fetchUser]);
 
   return (
     <UserContext.Provider value={{ user, isLoading: isLoading || auth0Loading, refreshUser }}>

@@ -52,7 +52,7 @@ export const chatRecipeInclude = {
 
 export class RecipeService {
   // Create a new recipe
-  async createRecipe(recipeData: CreateRecipeDTO) {
+  async createRecipe(recipeData: CreateRecipeDTO, createdBy: string) {
     // Create or find ingredients
     const ingredientPromises = recipeData.ingredients.map(async (ingredientData) => {
       let ingredient = await prisma.ingredient.findFirst({
@@ -78,6 +78,7 @@ export class RecipeService {
         prepTime: recipeData.prepTime,
         cookTime: recipeData.cookTime,
         totalTime: recipeData.totalTime,
+        createdBy: createdBy,
         ingredients: {
           create: ingredients.map(({ ingredient, quantity, unit, notes }) => ({
             ingredient: { connect: { id: ingredient.id } },

@@ -37,8 +37,8 @@ export async function getOrCreateUserFromAuth0(auth0User: Auth0User) {
 
     // Handle email_verified field (can be snake_case or camelCase)
     const emailVerified = 
-      (auth0User as any).email_verified ?? 
-      (auth0User as any).emailVerified ?? 
+      auth0User.email_verified ?? 
+      auth0User.emailVerified ?? 
       false;
 
     if (dbUser) {

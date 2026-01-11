@@ -22,19 +22,14 @@ export default function UserSync() {
       
       // Call the /api/auth/me endpoint which will sync the user
       fetch('/api/auth/me')
-        .then(async (response) => {
-          if (response.ok) {
-            const dbUser = await response.json();
-            console.log('User successfully synced to database:', dbUser);
-            // Refresh the user context
-            await refreshUser();
-          } else {
+        .then(async (response: Response) => {
+          if (!response.ok) {
             console.error('Failed to sync user to database');
             // Reset on error so we can retry
             hasSyncedRef.current = null;
           }
         })
-        .catch((error) => {
+        .catch((error: unknown) => {
           console.error('Error syncing user:', error);
           // Reset on error so we can retry
           hasSyncedRef.current = null;

@@ -1,6 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { RecipeService } from '@/services/recipeService'
 import { Recipe } from '@/types/recipe'
+import { auth0 } from '@/lib/auth0'
+import { getOrCreateUserFromAuth0 } from '@/utilities/userSync'
 import logger from '@/utilities/logger'
 
 export const runtime = "nodejs";
@@ -36,10 +38,22 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    // Get the current authenticated user
+    const session = await auth0.getSession(request);
+    
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const dbUser = await getOrCreateUserFromAuth0(session.user);
+    
     const recipeData: Recipe = await request.json()
-    const recipe = await recipeService.createRecipe(recipeData)
+    const recipe = await recipeService.createRecipe(recipeData, dbUser.id)
     return NextResponse.json(recipe, { status: 201 })
   } catch (error: unknown) {
     logger.error('Error creating recipe', {
