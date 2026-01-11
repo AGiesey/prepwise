@@ -2,6 +2,7 @@
 
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { useEffect, useRef } from 'react';
+import { useDatabaseUser } from '@/utilities/useUser';
 
 /**
  * Component that automatically syncs the Auth0 user to the database
@@ -10,6 +11,7 @@ import { useEffect, useRef } from 'react';
  */
 export default function UserSync() {
   const { user, isLoading } = useUser();
+  const { refreshUser } = useDatabaseUser();
   const hasSyncedRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -24,6 +26,8 @@ export default function UserSync() {
           if (response.ok) {
             const dbUser = await response.json();
             console.log('User successfully synced to database:', dbUser);
+            // Refresh the user context
+            await refreshUser();
           } else {
             console.error('Failed to sync user to database');
             // Reset on error so we can retry
@@ -36,7 +40,7 @@ export default function UserSync() {
           hasSyncedRef.current = null;
         });
     }
-  }, [user, isLoading]);
+  }, [user, isLoading, refreshUser]);
 
   // This component doesn't render anything
   return null;
