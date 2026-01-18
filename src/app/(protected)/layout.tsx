@@ -1,6 +1,7 @@
 import LeftSidebar from '@/components/LeftSidebar';
 import ChatContainer from '@/components/chat/ChatContainer';
 import MainContentWrapper from '@/components/chat/MainContentWrapper';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import UserSync from '@/components/UserSync';
 import { UserProvider } from '@/utilities/useUser';
 
@@ -11,16 +12,18 @@ export default function ProtectedLayout({
 }) {
   return (
     <UserProvider>
-      <div className="flex h-screen">
-        <UserSync />
-        <LeftSidebar />
-        <div className="flex-1 flex">
-          <MainContentWrapper>
-            {children}
-          </MainContentWrapper>
-          <ChatContainer />
+      <ProtectedRoute>
+        <div className="flex h-screen">
+          <UserSync />
+          <LeftSidebar />
+          <div className="flex-1 flex">
+            <MainContentWrapper>
+              {children}
+            </MainContentWrapper>
+            <ChatContainer />
+          </div>
         </div>
-      </div>
+      </ProtectedRoute>
     </UserProvider>
   );
 } 
