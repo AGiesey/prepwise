@@ -23,13 +23,13 @@ PrepWise is built on a pipeline-based architecture that orchestrates multiple La
    - Supports both sequential and conditional execution paths
 
 3. **Memory Management**
-   - Multi-layered memory system combining:
-     - Short-term conversation buffer
-     - Long-term conversation summaries
-     - Entity tracking for recipes and ingredients
-   - Vector-based storage using Redis Stack for semantic search
-   - Enables context-aware responses across conversation history
-   - User-specific memory isolation and context
+   - Session-based conversation context using PostgreSQL
+   - Maintains conversation threads per user per page context
+   - Stores up to 15 messages per conversation (configurable)
+   - Automatic new conversation detection (30-minute time gap)
+   - Cost-optimized with token limits
+   - User-specific conversation isolation
+   - See [Conversation Context System Decision](../architecture/decisions/006-conversation-context-system.md) for details
 
 4. **Chain Types**
    - Topic Classification Chain: Routes queries to appropriate handlers
@@ -53,18 +53,19 @@ PrepWise is built on a pipeline-based architecture that orchestrates multiple La
    - Supports easy testing and maintenance
    - Allows for future parallel processing
 
-3. **Redis Stack Integration**
-   - Provides vector storage for semantic search
-   - Enables real-time conversation history access
-   - Supports efficient memory management
-   - Allows for future scaling
+3. **Redis Conversation Storage**
+   - Stores conversation history in Redis (Upstash)
+   - Fast read/write operations for session data
+   - Automatic cleanup via TTL (24 hours)
+   - Supports future enhancements (summarization, semantic search)
+   - Free tier available (10K requests/day)
 
-4. **Memory System Design**
-   - Combines multiple memory types for comprehensive context
-   - Uses vector embeddings for semantic similarity
-   - Implements cleanup policies for resource management
-   - Supports future memory type additions
-   - Includes user-specific memory isolation
+4. **Conversation Context Design**
+   - Thread-based conversation management
+   - Persistent thread IDs with LangGraph MemorySaver
+   - Sliding window message history (last 15 messages)
+   - Time-based new conversation detection
+   - Page-context-aware threading
 
 ### System Goals
 
@@ -195,19 +196,15 @@ PrepWise is built on a pipeline-based architecture that orchestrates multiple La
 - [ ] Implement basic routing logic
 - [ ] Add error handling
 
-#### Phase 6: Memory System
-- [ ] Set up Redis Stack
-- [ ] Implement memory types
-- [ ] Create memory manager
-- [ ] Add vector storage
-- [ ] Add user-specific memory isolation
-
-#### Phase 7: Integration
-- [ ] Connect pipeline with memory system
-- [ ] Add semantic search capabilities
-- [ ] Implement conversation persistence
-- [ ] Add memory cleanup policies
-- [ ] Integrate user context with chat system
+#### Phase 6: Conversation Context System
+- [x] Design conversation context architecture
+- [ ] Add Conversation model to database schema
+- [ ] Implement ConversationManager service
+- [ ] Update ChatService to use conversation threads
+- [ ] Modify LangGraph chains to use persistent thread IDs
+- [ ] Update frontend to send message history
+- [ ] Add conversation cleanup job
+- See [Implementation Guide](../architecture/implementation-guides/conversation-context-implementation.md) for step-by-step instructions
 
 #### Phase 8: Recipe Modification
 - [ ] Add recipe modification chain
