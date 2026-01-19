@@ -41,8 +41,15 @@ npx prisma generate
 
 #### 1.3 Upstash Setup
 1. Create Redis database at [upstash.com](https://upstash.com)
-2. Get REST URL and token
-3. Update environment variables
+   - **Recommended**: Create separate databases for each environment:
+     - `prepwise-dev` for development
+     - `prepwise-prod` for production
+     - `prepwise-staging` for staging (optional)
+   - This ensures data isolation between environments
+2. Get REST URL and token for each database
+3. Update environment variables:
+   - **Development** (`.env.local`): Use dev database credentials
+   - **Production** (Vercel environment variables): Use prod database credentials
 
 ### Phase 2: Monitoring & Alerts
 

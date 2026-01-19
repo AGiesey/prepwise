@@ -23,13 +23,13 @@ PrepWise is built on a pipeline-based architecture that orchestrates multiple La
    - Supports both sequential and conditional execution paths
 
 3. **Memory Management**
-   - Session-based conversation context using PostgreSQL
+   - Unified LangGraph StateGraph with PostgresSaver
    - Maintains conversation threads per user per page context
-   - Stores up to 15 messages per conversation (configurable)
-   - Automatic new conversation detection (30-minute time gap)
-   - Cost-optimized with token limits
+   - Persistent conversation history in PostgreSQL
+   - All conversation types share same memory
+   - Cost-optimized (uses existing PostgreSQL, no Redis needed)
    - User-specific conversation isolation
-   - See [Conversation Context System Decision](../architecture/decisions/006-conversation-context-system.md) for details
+   - See [Unified LangGraph Architecture Decision](../architecture/decisions/007-unified-langgraph-migration.md) for details
 
 4. **Chain Types**
    - Topic Classification Chain: Routes queries to appropriate handlers
@@ -53,18 +53,19 @@ PrepWise is built on a pipeline-based architecture that orchestrates multiple La
    - Supports easy testing and maintenance
    - Allows for future parallel processing
 
-3. **Redis Conversation Storage**
-   - Stores conversation history in Redis (Upstash)
-   - Fast read/write operations for session data
-   - Automatic cleanup via TTL (24 hours)
+3. **PostgresSaver Conversation Storage**
+   - Stores conversation history in PostgreSQL via LangGraph PostgresSaver
+   - Uses existing database infrastructure (no additional services)
+   - Automatic conversation persistence
+   - All conversation types share same memory
    - Supports future enhancements (summarization, semantic search)
-   - Free tier available (10K requests/day)
 
 4. **Conversation Context Design**
+   - Unified LangGraph StateGraph for all conversation types
    - Thread-based conversation management
-   - Persistent thread IDs with LangGraph MemorySaver
-   - Sliding window message history (last 15 messages)
-   - Time-based new conversation detection
+   - Persistent thread IDs: `user-{userId}-page-{pageType}`
+   - All nodes share same state (no context loss)
+   - Automatic conversation persistence via PostgresSaver
    - Page-context-aware threading
 
 ### System Goals
@@ -196,15 +197,15 @@ PrepWise is built on a pipeline-based architecture that orchestrates multiple La
 - [ ] Implement basic routing logic
 - [ ] Add error handling
 
-#### Phase 6: Conversation Context System
-- [x] Design conversation context architecture
-- [ ] Add Conversation model to database schema
-- [ ] Implement ConversationManager service
-- [ ] Update ChatService to use conversation threads
-- [ ] Modify LangGraph chains to use persistent thread IDs
-- [ ] Update frontend to send message history
-- [ ] Add conversation cleanup job
-- See [Implementation Guide](../architecture/implementation-guides/conversation-context-implementation.md) for step-by-step instructions
+#### Phase 6: Unified LangGraph Architecture
+- [x] Design unified LangGraph architecture
+- [ ] Install PostgresSaver dependency
+- [ ] Set up database schema for checkpoints
+- [ ] Create unified StateGraph with all nodes
+- [ ] Convert existing chains to graph nodes
+- [ ] Update ChatService to use unified graph
+- [ ] Test all conversation scenarios
+- See [Migration Guide](../architecture/implementation-guides/unified-langgraph-migration-guide.md) for step-by-step instructions
 
 #### Phase 8: Recipe Modification
 - [ ] Add recipe modification chain

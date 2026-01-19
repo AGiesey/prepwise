@@ -22,19 +22,38 @@ Follow these steps in order. Each step is designed to be completed independently
 1. **Create Upstash Account**:
    - Go to [https://upstash.com](https://upstash.com)
    - Sign up for a free account
-   - Create a new Redis database
-   - Choose a region close to your deployment
 
-2. **Get Credentials**:
-   - Copy the REST URL (e.g., `https://your-db.upstash.io`)
-   - Copy the REST token
+2. **Create Separate Redis Databases for Each Environment** (Recommended):
+   - **Development**: Create database named `prepwise-dev`
+   - **Production**: Create database named `prepwise-prod`
+   - **Staging** (optional): Create database named `prepwise-staging`
+   
+   **Why separate instances?**
+   - Prevents data leakage between environments
+   - Allows independent scaling and configuration
+   - Easier debugging (no production data in dev)
+   - Can use different regions for optimal performance
+   - Free tier supports multiple databases
 
-3. **Add Environment Variables**:
-   Add to your `.env` file:
+3. **Get Credentials for Each Database**:
+   - For each database, copy the REST URL (e.g., `https://prepwise-dev.upstash.io`)
+   - Copy the REST token for each
+
+4. **Add Environment Variables**:
+   
+   **Development** (`.env.local`):
    ```bash
-   UPSTASH_REDIS_REST_URL=https://your-db.upstash.io
-   UPSTASH_REDIS_REST_TOKEN=your-token-here
+   UPSTASH_REDIS_REST_URL=https://prepwise-dev.upstash.io
+   UPSTASH_REDIS_REST_TOKEN=dev-token-here
    ```
+   
+   **Production** (`.env.production` or platform environment variables like Vercel):
+   ```bash
+   UPSTASH_REDIS_REST_URL=https://prepwise-prod.upstash.io
+   UPSTASH_REDIS_REST_TOKEN=prod-token-here
+   ```
+   
+   **Note**: For production deployments (Vercel, Railway, etc.), set these as environment variables in your platform's dashboard, not in `.env` files.
 
 4. **Install Dependency**:
    ```bash
@@ -144,7 +163,7 @@ export class ConversationManager {
 2. `saveConversationHistory`:
    - Limit messages to last `MAX_MESSAGES`
    - Generate Redis key: `generateRedisKey(userId, pageType)`
-   - Create history object: `{ messages, lastActivity: Date.now(), threadId, pageType }`
+   - Create history object: `{ messages, lastActivity: Date.now(), threadId, pageType, recipeContext?, recipeInProgress? }`
    - Save with TTL: `await redis.setex(key, CONVERSATION_TTL / 1000, history)`
    - TTL is in seconds, so divide milliseconds by 1000
 
@@ -152,6 +171,7 @@ export class ConversationManager {
    - Map `ConversationMessage[]` to `BaseMessage[]`
    - Use `HumanMessage` for 'human' role
    - Use `AIMessage` for 'ai' role
+   - **Include recipe context as system message** if present
 
 4. `shouldStartNewConversation`:
    - Return `true` if history is null
@@ -161,6 +181,25 @@ export class ConversationManager {
 5. `clearConversation`:
    - Generate Redis key: `generateRedisKey(userId, pageType)`
    - Delete: `await redis.del(key)`
+
+6. `addRecipeContext`:
+   - Get current conversation history
+   - Add recipe summary to conversation messages (as system message)
+   - Store recipe data in history.recipeContext
+   - Save updated history
+
+7. `getRecipeContext`:
+   - Get conversation history
+   - Return history.recipeContext if exists
+
+8. `addRecipeInProgress`:
+   - Get current conversation history
+   - Store recipe data in history.recipeInProgress
+   - Save updated history
+
+9. `getRecipeInProgress`:
+   - Get conversation history
+   - Return history.recipeInProgress if exists
 
 ---
 
@@ -187,9 +226,15 @@ Add conversation management logic:
 3. Check if new conversation: `ConversationManager.shouldStartNewConversation(history)`
 4. If new conversation, clear old one
 5. Merge frontend messages with stored history
-6. Convert to LangChain messages
-7. Pass thread ID and history to pipeline
-8. After pipeline execution, save updated conversation
+6. **Get recipe context** (if on recipe page): `ConversationManager.getRecipeContext(userId, type)`
+7. **Get recipe-in-progress** (if creating/modifying): `ConversationManager.getRecipeInProgress(userId, type)`
+8. **Include recipe context in conversation** if available
+9. Convert to LangChain messages
+10. Pass thread ID, history, recipe context, and recipe-in-progress to pipeline
+11. After pipeline execution:
+    - Save updated conversation
+    - **Store recipe context** if recipe data in response metadata
+    - **Store recipe-in-progress** if recipe creation/modification in progress
 
 ### Step 2.2: Update API Route
 
@@ -216,11 +261,14 @@ Add to `PipelineInput`:
 ```typescript
 threadId?: string;
 conversationHistory?: BaseMessage[];
+recipeContext?: any; // Current recipe data if on recipe page
+recipeInProgress?: any; // Recipe being created/modified
 ```
 
 Add to `PipelineOutput`:
 ```typescript
 threadId?: string;
+recipeInProgress?: any; // Updated recipe-in-progress state
 ```
 
 ---
@@ -241,22 +289,32 @@ export async function runContextSpecificChain(
 )
 ```
 
-2. Update config to use provided threadId:
+2. Update config to use provided threadId (CRITICAL - must be persistent):
 ```typescript
 const config = { configurable: { thread_id: threadId } };
 ```
 
-3. If `existingMessages` provided, include them in initial state:
+3. **Include recipe context in conversation messages** (not just system prompt):
 ```typescript
-const initialState = existingMessages && existingMessages.length > 0
-  ? { messages: existingMessages }
+// Add recipe context as system message if available
+const messagesWithContext = context
+  ? [new SystemMessage(`Current recipe context: ${JSON.stringify(context)}`), ...existingMessages]
+  : existingMessages || [];
+```
+
+4. If `existingMessages` provided, include them in initial state:
+```typescript
+const initialState = messagesWithContext.length > 0
+  ? { messages: messagesWithContext }
   : { messages: [] };
 ```
 
-4. Invoke with initial state:
+5. Invoke with initial state:
 ```typescript
 return await app.invoke(initialState, config);
 ```
+
+**Important**: Recipe context must be in conversation messages, not just system prompt variable, so it persists in conversation history.
 
 ### Step 3.2: Update runGeneralCookingChain
 
@@ -275,16 +333,16 @@ Apply same changes as Step 3.1 (if it uses LangGraph).
 **Files**: All step files in `src/app/api/chat/pipeline/steps/`
 
 Update each step to:
-1. Accept `threadId` and `conversationHistory` from input
+1. Accept `threadId`, `conversationHistory`, `recipeContext`, and `recipeInProgress` from input
 2. Pass them to chain functions
-3. Return `threadId` in output
+3. Return `threadId` and updated `recipeInProgress` in output
 
-Example for `ContextualResponseStep`:
+**ContextualResponseStep**:
 ```typescript
 async execute(input: PipelineInput): Promise<PipelineOutput> {
   const response = await runContextSpecificChain(
     input.message,
-    input.context,
+    input.context || input.recipeContext,
     input.threadId || 'default-thread',
     input.conversationHistory
   );
@@ -292,11 +350,86 @@ async execute(input: PipelineInput): Promise<PipelineOutput> {
 }
 ```
 
+**RecipeCreationStep** (CRITICAL ENHANCEMENT):
+```typescript
+async execute(input: PipelineInput): Promise<PipelineOutput> {
+  // Include conversation history in messages
+  const messages = [
+    new SystemMessage(systemMessage),
+    ...(input.conversationHistory || []), // Include conversation history
+    ...(input.recipeContext ? [new SystemMessage(`Base recipe: ${JSON.stringify(input.recipeContext)}`)] : []),
+    ...(input.recipeInProgress ? [new SystemMessage(`Recipe in progress: ${JSON.stringify(input.recipeInProgress)}`)] : []),
+    new HumanMessage(input.message)
+  ];
+  
+  // ... rest of implementation
+  
+  // Store recipe-in-progress in output
+  return {
+    ...output,
+    recipeInProgress: recipeData
+  };
+}
+```
+
+**RecipeModificationStep** (NEW - to be created):
+```typescript
+async execute(input: PipelineInput): Promise<PipelineOutput> {
+  // Recipe context is REQUIRED for modification
+  if (!input.recipeContext) {
+    return { ...input, result: "I need to know which recipe you want to modify.", error: "No recipe context" };
+  }
+  
+  // Include conversation history and recipe context
+  const messages = [
+    new SystemMessage(`Modify this recipe: ${JSON.stringify(input.recipeContext)}`),
+    ...(input.conversationHistory || []),
+    new HumanMessage(input.message)
+  ];
+  
+  // ... implementation to modify recipe
+  
+  // Store modified recipe as recipe-in-progress
+  return {
+    ...output,
+    recipeInProgress: modifiedRecipeData
+  };
+}
+```
+
 ---
 
-## Day 4: Update Frontend & Testing
+## Day 4: Create RecipeModificationStep
 
-### Step 4.1: Update ChatContainer
+### Step 4.1: Create RecipeModificationStep
+
+**File**: `src/app/api/chat/pipeline/steps/RecipeModificationStep.ts` (new)
+
+Create new step similar to RecipeCreationStep but:
+- Requires recipe context (from input.recipeContext)
+- Incorporates conversation history
+- Modifies existing recipe based on user request
+- Returns modified recipe JSON
+- Stores as recipe-in-progress
+
+### Step 4.2: Add RecipeModificationStep to Pipeline
+
+**File**: `src/app/api/chat/pipeline/ChatPipelineFactory.ts`
+
+Add RecipeModificationStep to pipeline when recipe context is available:
+```typescript
+if (hasContext) {
+  steps.push(
+    new RecipeModificationStep(), // Add before RecipeCreationStep
+    new RecipeCreationStep(),
+    // ... rest
+  );
+}
+```
+
+## Day 5: Update Frontend & Testing
+
+### Step 5.1: Update ChatContainer
 
 **File**: `src/components/chat/ChatContainer.tsx`
 
@@ -322,7 +455,7 @@ const response = await fetch('/api/chat', {
 
 2. Ensure messages are properly formatted before sending.
 
-### Step 4.2: Testing
+### Step 5.2: Testing
 
 **Manual Testing Checklist**:
 
@@ -354,7 +487,7 @@ const response = await fetch('/api/chat', {
    - [ ] Test with Redis connection issues
    - [ ] Verify graceful degradation (conversation continues without history)
 
-### Step 4.3: Cleanup (Automatic)
+### Step 5.3: Cleanup (Automatic)
 
 Redis TTL automatically handles cleanup - no additional job needed. Conversations expire after 24 hours based on the TTL set when saving.
 
