@@ -55,15 +55,11 @@ export class RecipeService {
   async createRecipe(recipeData: CreateRecipeDTO, createdBy: string) {
     // Create or find ingredients
     const ingredientPromises = recipeData.ingredients.map(async (ingredientData) => {
-      let ingredient = await prisma.ingredient.findFirst({
-        where: { name: ingredientData.name }
+      const ingredient = await prisma.ingredient.upsert({
+        where: { name: ingredientData.name },
+        update: {},
+        create: { name: ingredientData.name }
       })
-
-      if (!ingredient) {
-        ingredient = await prisma.ingredient.create({
-          data: { name: ingredientData.name }
-        })
-      }
 
       return { ingredient, ...ingredientData }
     })
@@ -159,15 +155,11 @@ export class RecipeService {
           ingredients: {
             deleteMany: {},
             create: await Promise.all(recipeData.ingredients.map(async (ingredientData) => {
-              let ingredient = await prisma.ingredient.findFirst({
-                where: { name: ingredientData.name }
+              const ingredient = await prisma.ingredient.upsert({
+                where: { name: ingredientData.name },
+                update: {},
+                create: { name: ingredientData.name }
               })
-
-              if (!ingredient) {
-                ingredient = await prisma.ingredient.create({
-                  data: { name: ingredientData.name }
-                })
-              }
 
               return {
                 ingredient: { connect: { id: ingredient.id } },
