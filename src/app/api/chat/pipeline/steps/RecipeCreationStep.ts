@@ -5,6 +5,37 @@ import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { CreateRecipeDTO } from '@/types/dtos';
 import { logChainError, logDebug } from '@/utilities/logger';
 
+const URL_REGEX = /https?:\/\/[^\s]+/i;
+
+async function fetchPageText(url: string): Promise<string> {
+  const response = await fetch(url, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; PrepWise/1.0)' },
+    signal: AbortSignal.timeout(10000),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch URL: ${response.status} ${response.statusText}`);
+  }
+
+  const html = await response.text();
+
+  // Remove script, style, and other non-content tags with their contents
+  const stripped = html
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+  // Truncate to avoid exceeding context limits (~12k chars is plenty for a recipe page)
+  return stripped.slice(0, 12000);
+}
+
 const llm = new ChatOpenAI({
   model: "gpt-4o-mini",
   temperature: 0.2,
@@ -26,7 +57,36 @@ export class RecipeCreationStep extends BaseStep {
     const startTime = Date.now();
 
     try {
-      const systemMessage = `You are a recipe extraction assistant. Extract recipe information from the user's message and return it as a JSON object matching this exact structure:
+      // If the message contains a URL, fetch the page content and use that instead
+      let sourceText = input.message;
+      const urlMatch = input.message.match(URL_REGEX);
+      if (urlMatch) {
+        const url = urlMatch[0];
+        try {
+          const pageText = await fetchPageText(url);
+          if (pageText.length < 200) {
+            const result = "I couldn't read the content at that URL — the page may require JavaScript to load. Try copying and pasting the recipe text directly into the chat.";
+            return this.createOutput(input, {
+              result,
+              metadata: { ...input.metadata, recipeCreationIntent: true, stepType: 'recipe-creation', stopPipeline: true }
+            });
+          }
+          sourceText = pageText;
+        } catch (fetchError) {
+          const result = "I wasn't able to reach that URL. Please check the link and try again, or paste the recipe text directly.";
+          logChainError(fetchError, `recipe-creation-fetch-${this.name}`);
+          return this.createOutput(input, {
+            result,
+            metadata: { ...input.metadata, recipeCreationIntent: true, stepType: 'recipe-creation', stopPipeline: true }
+          });
+        }
+      }
+
+      const systemMessage = `You are a recipe extraction assistant. Extract recipe information from the provided text and return it as a JSON object.
+
+If the text does not contain a recipe, return exactly: {"error": "not-a-recipe", "reason": "<brief description of what the page actually contains>"}
+
+Otherwise return a JSON object matching this exact structure:
 
 {
   "title": "string - recipe name",
@@ -64,7 +124,7 @@ Important:
 
       const messages = [
         new SystemMessage(systemMessage),
-        new HumanMessage(input.message)
+        new HumanMessage(sourceText)
       ];
 
       const response = await llm.invoke(messages);
@@ -93,7 +153,17 @@ Important:
         }
 
         recipeData = JSON.parse(content);
-        
+
+        // Check if the LLM signalled that the content isn't a recipe
+        if ('error' in recipeData && (recipeData as Record<string, unknown>).error === 'not-a-recipe') {
+          const reason = (recipeData as Record<string, unknown>).reason as string || 'unknown content';
+          const result = `That URL doesn't appear to contain a recipe (${reason}). Try sharing a link that goes directly to a recipe page.`;
+          return this.createOutput(input, {
+            result,
+            metadata: { ...input.metadata, recipeCreationIntent: true, stepType: 'recipe-creation', stopPipeline: true }
+          });
+        }
+
         // Console.log the JSON as requested (server-side)
         console.log('Recipe Creation JSON Response:', JSON.stringify(recipeData, null, 2));
         logDebug('RecipeCreationStep - Successfully Parsed JSON', {
