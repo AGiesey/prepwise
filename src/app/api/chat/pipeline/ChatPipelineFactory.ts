@@ -5,14 +5,16 @@ import {
   ContextualResponseStep,
   GeneralCookingResponseStep,
   NonFoodResponseStep,
-  RecipeCreationStep
+  RecipeCreationStep,
+  RecipeUrlParsingStep
 } from './steps';
 
 export class ChatPipelineFactory {
   static createPipeline(hasContext: boolean = false): ChatPipeline {
     const steps = [
       new TopicClassificationStep(),
-      new RecipeCreationStep()
+      new RecipeCreationStep(),
+      new RecipeUrlParsingStep()
     ];
 
     // Add response steps based on whether we have context
