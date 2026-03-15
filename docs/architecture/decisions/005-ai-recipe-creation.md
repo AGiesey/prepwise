@@ -1,7 +1,7 @@
 # AI Recipe Creation and Modification Capabilities
 
 ## Status
-Proposed
+In Progress — `RecipeCreationStep` implemented; modification and URL parsing pending
 
 ## Context
 Currently, recipe creation in PrepWise is extremely manual and time-consuming. Users must:

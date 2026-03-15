@@ -108,10 +108,9 @@ This is a Next.js web application that helps users manage and interact with thei
 
 ---
 
-## Notes for Cursor
-- All LangChain-related logic lives in the `/chat` directory
-- Chains are separated by purpose: `runRecipePromptChain`, `runGeneralCookingChain`, etc.
-- Authentication system will be implemented with provider-agnostic design
-- User context will be integrated with chat system for personalized experiences
-- For technical implementation details, see `ARCHITECTURE.md` and `docs/architecture/authentication-system.md`
+## Notes
+- All LangChain-related logic lives in `src/app/api/chat/`
+- Pipeline steps live in `src/app/api/chat/pipeline/steps/` — extend `BaseStep` to add new capabilities
+- Authentication is implemented via Auth0; user context fetched with `getCurrentUser(req)`
+- For technical implementation details, see `ARCHITECTURE.md` and `docs/architecture/decisions/`
 
