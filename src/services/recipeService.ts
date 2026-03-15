@@ -53,21 +53,36 @@ export const chatRecipeInclude = {
 export class RecipeService {
   // Create a new recipe
   async createRecipe(recipeData: CreateRecipeDTO, createdBy: string) {
-    // Create or find ingredients
-    const ingredientPromises = recipeData.ingredients.map(async (ingredientData) => {
-      let ingredient = await prisma.ingredient.findFirst({
-        where: { name: ingredientData.name }
-      })
-
-      if (!ingredient) {
-        ingredient = await prisma.ingredient.create({
-          data: { name: ingredientData.name }
+    // Resolve ingredients (upsert + deduplicate)
+    const resolvedIngredients = await Promise.all(
+      recipeData.ingredients.map(async (ingredientData) => {
+        const ingredient = await prisma.ingredient.upsert({
+          where: { name: ingredientData.name },
+          update: {},
+          create: { name: ingredientData.name }
         })
-      }
-
-      return { ingredient, ...ingredientData }
+        return { ingredient, ...ingredientData }
+      })
+    )
+    const seenIngredients = new Set<string>()
+    const ingredients = resolvedIngredients.filter(({ ingredient }) => {
+      if (seenIngredients.has(ingredient.id)) return false
+      seenIngredients.add(ingredient.id)
+      return true
     })
-    const ingredients = await Promise.all(ingredientPromises)
+
+    // Resolve dietary restrictions
+    const dietaryEntries = Object.entries(recipeData.dietary || {}).filter(([, v]) => v)
+    const dietaryRestrictions = await Promise.all(
+      dietaryEntries.map(async ([name]) => {
+        const restriction = await prisma.dietaryRestriction.upsert({
+          where: { name },
+          update: {},
+          create: { name }
+        })
+        return restriction
+      })
+    )
 
     // Create the recipe
     const recipe = await prisma.recipe.create({
@@ -95,14 +110,21 @@ export class RecipeService {
         },
         nutritionInfo: {
           create: {
-            calories: recipeData.nutrition.calories,
+            calories: Math.round(recipeData.nutrition.calories),
             protein: recipeData.nutrition.protein,
             fat: recipeData.nutrition.fat,
             fiber: recipeData.nutrition.fiber,
             carbohydrates: recipeData.nutrition.carbohydrates,
             sugar: recipeData.nutrition.sugar
           }
-        }
+        },
+        ...(dietaryRestrictions.length > 0 && {
+          dietaryRestrictions: {
+            create: dietaryRestrictions.map((restriction) => ({
+              dietaryRestriction: { connect: { id: restriction.id } }
+            }))
+          }
+        })
       },
       include: recipeInclude
     })
@@ -144,6 +166,38 @@ export class RecipeService {
       throw new Error('Recipe not found')
     }
 
+    // Resolve ingredients if provided (upsert + deduplicate)
+    let resolvedIngredients: { ingredient: { id: string }, quantity: number, unit: string, notes?: string }[] | undefined
+    if (recipeData.ingredients) {
+      const raw = await Promise.all(
+        recipeData.ingredients.map(async (ingredientData) => {
+          const ingredient = await prisma.ingredient.upsert({
+            where: { name: ingredientData.name },
+            update: {},
+            create: { name: ingredientData.name }
+          })
+          return { ingredient, ...ingredientData }
+        })
+      )
+      const seen = new Set<string>()
+      resolvedIngredients = raw.filter(({ ingredient }) => {
+        if (seen.has(ingredient.id)) return false
+        seen.add(ingredient.id)
+        return true
+      })
+    }
+
+    // Resolve dietary restrictions if provided
+    let resolvedDietary: { id: string }[] | undefined
+    if (recipeData.dietary) {
+      const dietaryEntries = Object.entries(recipeData.dietary).filter(([, v]) => v)
+      resolvedDietary = await Promise.all(
+        dietaryEntries.map(async ([name]) =>
+          prisma.dietaryRestriction.upsert({ where: { name }, update: {}, create: { name } })
+        )
+      )
+    }
+
     // Update the recipe
     const recipe = await prisma.recipe.update({
       where: { id },
@@ -154,31 +208,17 @@ export class RecipeService {
         prepTime: recipeData.prepTime,
         cookTime: recipeData.cookTime,
         totalTime: recipeData.totalTime,
-        // Handle ingredients update if provided
-        ...(recipeData.ingredients && {
+        ...(resolvedIngredients && {
           ingredients: {
             deleteMany: {},
-            create: await Promise.all(recipeData.ingredients.map(async (ingredientData) => {
-              let ingredient = await prisma.ingredient.findFirst({
-                where: { name: ingredientData.name }
-              })
-
-              if (!ingredient) {
-                ingredient = await prisma.ingredient.create({
-                  data: { name: ingredientData.name }
-                })
-              }
-
-              return {
-                ingredient: { connect: { id: ingredient.id } },
-                quantity: ingredientData.quantity,
-                unit: ingredientData.unit,
-                notes: ingredientData.notes
-              }
+            create: resolvedIngredients.map(({ ingredient, quantity, unit, notes }) => ({
+              ingredient: { connect: { id: ingredient.id } },
+              quantity,
+              unit,
+              notes
             }))
           }
         }),
-        // Handle instructions update if provided
         ...(recipeData.instructions && {
           instructions: {
             deleteMany: {},
@@ -188,17 +228,24 @@ export class RecipeService {
             }))
           }
         }),
-        // Handle nutrition info update if provided
         ...(recipeData.nutrition && {
           nutritionInfo: {
             update: {
-              calories: recipeData.nutrition.calories,
+              calories: Math.round(recipeData.nutrition.calories),
               protein: recipeData.nutrition.protein,
               fat: recipeData.nutrition.fat,
               fiber: recipeData.nutrition.fiber,
               carbohydrates: recipeData.nutrition.carbohydrates,
               sugar: recipeData.nutrition.sugar
             }
+          }
+        }),
+        ...(resolvedDietary && {
+          dietaryRestrictions: {
+            deleteMany: {},
+            create: resolvedDietary.map((restriction) => ({
+              dietaryRestriction: { connect: { id: restriction.id } }
+            }))
           }
         })
       },
