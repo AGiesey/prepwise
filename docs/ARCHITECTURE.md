@@ -157,63 +157,25 @@ PrepWise is built on a pipeline-based architecture that orchestrates multiple La
   - Support real-time access
   - User-specific memory isolation
 
-### 📅 Implementation Phases
+### 📅 Implementation Status
 
-#### Phase 1: Authentication Foundation
-- [ ] Create authentication service layer
-- [ ] Implement MockAuthProvider for development
-- [ ] Update database schema with user ownership
-- [ ] Create authentication middleware for API routes
+#### ✅ Completed
+- Auth0 authentication with session management and middleware route protection
+- User model with roles, external ID, and Auth0 provider tracking
+- Recipe ownership — recipes tied to authenticated users
+- Pipeline architecture — `ChatPipeline`, `BaseStep`, step implementations
+- Topic classification, contextual, general cooking, and non-food response steps
+- AI recipe creation from natural language (`RecipeCreationStep`)
 
-#### Phase 2: Provider Integration
-- [ ] Implement FusionAuthProvider
-- [ ] Implement CognitoProvider
-- [ ] Add provider-specific configuration
-- [ ] Create migration scripts for existing data
+#### 🧪 In Progress
+- Recipe modification via chat (save as new recipe with generated title)
+- Recipe parsing from URLs and pasted text
+- UI for recipe preview/editing before saving
 
-#### Phase 3: Frontend Integration
-- [ ] Update AuthContext to use new service
-- [ ] Implement proper token management
-- [ ] Add user-specific UI components
-- [ ] Update protected routes and layouts
-
-#### Phase 4: Invitation Management
-- [ ] Implement invitation system with database storage
-- [ ] Create invitation UI for admins to send invites
-- [ ] Add invitation validation and acceptance flow
-- [ ] Implement role-based access control for invitations
-
-#### Phase 5: Recipe Ownership
-- [ ] Update recipe creation/editing to include user ownership
-- [ ] Implement user-specific recipe filtering
-- [ ] Add favorites functionality
-- [ ] Create user dashboard with personal recipes
-
-#### Phase 5: Pipeline Foundation
-- [ ] Create pipeline structure
-- [ ] Convert existing chains to pipeline steps
-- [ ] Implement basic routing logic
-- [ ] Add error handling
-
-#### Phase 6: Memory System
-- [ ] Set up Redis Stack
-- [ ] Implement memory types
-- [ ] Create memory manager
-- [ ] Add vector storage
-- [ ] Add user-specific memory isolation
-
-#### Phase 7: Integration
-- [ ] Connect pipeline with memory system
-- [ ] Add semantic search capabilities
-- [ ] Implement conversation persistence
-- [ ] Add memory cleanup policies
-- [ ] Integrate user context with chat system
-
-#### Phase 8: Recipe Modification
-- [ ] Add recipe modification chain
-- [ ] Implement recipe validation
-- [ ] Add title generation
-- [ ] Connect with database operations
+#### 🔲 Not Started
+- Invitation system (invite-only registration)
+- Memory system (Redis Stack, vector storage, conversation persistence)
+- Meal planning, grocery list generation, pantry inventory
 
 ### 🔍 Technical Notes
 - Authentication code will live in `/services/auth`
