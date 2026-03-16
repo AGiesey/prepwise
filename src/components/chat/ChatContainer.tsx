@@ -9,6 +9,7 @@ import { useMessages } from '@/utilities/useMessages';
 import { MessageRole } from '@/types/message';
 import { useChatContext } from './utils/chatContext';
 import { CreateRecipeDTO } from '@/types/dtos';
+import { sanitizeRecipeData } from '@/utilities/sanitizeRecipeData';
 
 export const ChatContext = createContext<{
   isOpen: boolean;
@@ -57,9 +58,8 @@ export default function ChatContainer() {
       
       // Check if response contains recipe data
       if (data.metadata?.recipeData) {
-        const recipe = data.metadata.recipeData as CreateRecipeDTO;
+        const recipe = sanitizeRecipeData(data.metadata.recipeData);
         setRecipeData(recipe);
-        // Console.log the JSON response in browser
         console.log('Recipe Creation JSON Response:', JSON.stringify(recipe, null, 2));
       }
     } catch (error) {

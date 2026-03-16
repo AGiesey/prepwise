@@ -23,6 +23,39 @@ const NUTRITION_FIELDS: [keyof NutritionInfo, string][] = [
   ['sugar', 'Sugar (g)'],
 ];
 
+type FieldErrors = Record<string, string>;
+
+function FieldError({ error }: { error?: string }) {
+  if (!error) return null;
+  return <p className="text-red-500 text-xs mt-1">{error}</p>;
+}
+
+function validateRecipe(data: Partial<Recipe>): FieldErrors {
+  const errors: FieldErrors = {};
+
+  if (!data.title?.trim()) errors.title = 'Title is required';
+  if (!data.yield?.trim()) errors.yield = 'Yield is required (e.g. "4 servings")';
+
+  if (!data.ingredients?.length) {
+    errors.ingredients = 'At least one ingredient is required';
+  } else {
+    data.ingredients.forEach((ing, i) => {
+      if (!ing.name?.trim()) errors[`ingredient_${i}_name`] = 'Ingredient name is required';
+      if (isNaN(ing.quantity) || ing.quantity < 0) errors[`ingredient_${i}_quantity`] = 'Must be a valid number';
+    });
+  }
+
+  if (!data.instructions?.length) {
+    errors.instructions = 'At least one instruction step is required';
+  } else {
+    data.instructions.forEach((step, i) => {
+      if (!step?.trim()) errors[`instruction_${i}`] = 'This step is empty — add a description or remove it';
+    });
+  }
+
+  return errors;
+}
+
 interface RecipeFormProps {
   initialData?: Recipe;
   isEditing?: boolean;
@@ -48,6 +81,7 @@ export default function RecipeForm({ initialData, isEditing = false }: RecipeFor
   const [newIngredient, setNewIngredient] = useState({ quantity: 1, unit: '', name: '' });
   const [newInstruction, setNewInstruction] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   useEffect(() => {
     if (initialData) setFormData(initialData);
@@ -127,6 +161,14 @@ export default function RecipeForm({ initialData, isEditing = false }: RecipeFor
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    const validationErrors = validateRecipe(formData);
+    if (Object.keys(validationErrors).length > 0) {
+      setFieldErrors(validationErrors);
+      return;
+    }
+    setFieldErrors({});
+
     try {
       const url = isEditing ? `/api/recipes/${initialData?.id}` : '/api/recipes';
       const method = isEditing ? 'PUT' : 'POST';
@@ -137,6 +179,7 @@ export default function RecipeForm({ initialData, isEditing = false }: RecipeFor
       });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
+        if (data.fields) setFieldErrors(data.fields);
         throw new Error(data.error || 'Failed to save recipe');
       }
       router.push('/recipes');
@@ -157,9 +200,10 @@ export default function RecipeForm({ initialData, isEditing = false }: RecipeFor
             type="text"
             value={formData.title}
             onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-            className="w-full p-2 border rounded"
+            className={`w-full p-2 border rounded ${fieldErrors.title ? 'border-red-400' : ''}`}
             required
           />
+          <FieldError error={fieldErrors.title} />
         </div>
 
         {/* Description */}
@@ -181,10 +225,11 @@ export default function RecipeForm({ initialData, isEditing = false }: RecipeFor
             type="text"
             value={formData.yield}
             onChange={(e) => setFormData(prev => ({ ...prev, yield: e.target.value }))}
-            className="w-full p-2 border rounded"
+            className={`w-full p-2 border rounded ${fieldErrors.yield ? 'border-red-400' : ''}`}
             placeholder="e.g. 4 servings"
             required
           />
+          <FieldError error={fieldErrors.yield} />
         </div>
 
         {/* Times */}
@@ -263,36 +308,40 @@ export default function RecipeForm({ initialData, isEditing = false }: RecipeFor
               Add
             </button>
           </div>
+          <FieldError error={fieldErrors.ingredients} />
           <ul className="space-y-2">
             {formData.ingredients?.map((ingredient, index) => (
-              <li key={index} className="flex items-center gap-2">
-                <input
-                  type="number"
-                  value={ingredient.quantity}
-                  onChange={(e) => updateIngredient(index, 'quantity', parseFloat(e.target.value) || 0)}
-                  className="w-20 p-2 border rounded"
-                  min={0}
-                  step="any"
-                />
-                <input
-                  type="text"
-                  value={ingredient.unit}
-                  onChange={(e) => updateIngredient(index, 'unit', e.target.value)}
-                  className="w-24 p-2 border rounded"
-                />
-                <input
-                  type="text"
-                  value={ingredient.name}
-                  onChange={(e) => updateIngredient(index, 'name', e.target.value)}
-                  className="flex-1 p-2 border rounded"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeIngredient(index)}
-                  className="text-red-500 hover:text-red-700 cursor-pointer text-sm shrink-0"
-                >
-                  Remove
-                </button>
+              <li key={index} className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={ingredient.quantity}
+                    onChange={(e) => updateIngredient(index, 'quantity', parseFloat(e.target.value) || 0)}
+                    className={`w-20 p-2 border rounded ${fieldErrors[`ingredient_${index}_quantity`] ? 'border-red-400' : ''}`}
+                    min={0}
+                    step="any"
+                  />
+                  <input
+                    type="text"
+                    value={ingredient.unit}
+                    onChange={(e) => updateIngredient(index, 'unit', e.target.value)}
+                    className="w-24 p-2 border rounded"
+                  />
+                  <input
+                    type="text"
+                    value={ingredient.name}
+                    onChange={(e) => updateIngredient(index, 'name', e.target.value)}
+                    className={`flex-1 p-2 border rounded ${fieldErrors[`ingredient_${index}_name`] ? 'border-red-400' : ''}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeIngredient(index)}
+                    className="text-red-500 hover:text-red-700 cursor-pointer text-sm shrink-0"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <FieldError error={fieldErrors[`ingredient_${index}_quantity`] || fieldErrors[`ingredient_${index}_name`]} />
               </li>
             ))}
           </ul>
@@ -323,23 +372,27 @@ export default function RecipeForm({ initialData, isEditing = false }: RecipeFor
               Add
             </button>
           </div>
+          <FieldError error={fieldErrors.instructions} />
           <ol className="space-y-2">
             {formData.instructions?.map((instruction, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <span className="font-medium text-sm pt-2 w-5 shrink-0">{index + 1}.</span>
-                <textarea
-                  value={instruction}
-                  onChange={(e) => updateInstruction(index, e.target.value)}
-                  className="flex-1 p-2 border rounded resize-none"
-                  rows={2}
-                />
-                <button
-                  type="button"
-                  onClick={() => removeInstruction(index)}
-                  className="text-red-500 hover:text-red-700 cursor-pointer text-sm pt-2 shrink-0"
-                >
-                  Remove
-                </button>
+              <li key={index} className="space-y-1">
+                <div className="flex items-start gap-2">
+                  <span className="font-medium text-sm pt-2 w-5 shrink-0">{index + 1}.</span>
+                  <textarea
+                    value={instruction}
+                    onChange={(e) => updateInstruction(index, e.target.value)}
+                    className={`flex-1 p-2 border rounded resize-none ${fieldErrors[`instruction_${index}`] ? 'border-red-400' : ''}`}
+                    rows={2}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeInstruction(index)}
+                    className="text-red-500 hover:text-red-700 cursor-pointer text-sm pt-2 shrink-0"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <FieldError error={fieldErrors[`instruction_${index}`]} />
               </li>
             ))}
           </ol>

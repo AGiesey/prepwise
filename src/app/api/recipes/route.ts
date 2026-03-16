@@ -1,9 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { RecipeService } from '@/services/recipeService'
 import { Recipe } from '@/types/recipe'
 import { auth0 } from '@/lib/auth0'
 import { getOrCreateUserFromAuth0 } from '@/utilities/userSync'
 import logger from '@/utilities/logger'
+
+function translateSaveError(error: unknown): { error: string; fields?: Record<string, string> } {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    switch (error.code) {
+      case 'P2002':
+        return { error: 'A duplicate entry was detected. Try refreshing the page and saving again.' };
+      case 'P2000':
+        return { error: 'One of the fields is too long. Please shorten it and try again.' };
+      case 'P2003':
+        return { error: 'A required relationship is missing. Please try again.' };
+      default:
+        return { error: 'There was a problem saving the recipe. Please try again.' };
+    }
+  }
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    return {
+      error: 'Some fields have unexpected values.',
+      fields: { ingredients: 'Check that all ingredient quantities are numbers.' }
+    };
+  }
+  return { error: 'Failed to save recipe. Please try again.' };
+}
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -60,9 +83,6 @@ export async function POST(request: NextRequest) {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined
     });
-    return NextResponse.json(
-      { error: 'Failed to create recipe' },
-      { status: 500 }
-    )
+    return NextResponse.json(translateSaveError(error), { status: 500 });
   }
 } 
