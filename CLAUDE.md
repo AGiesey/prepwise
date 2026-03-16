@@ -33,24 +33,26 @@ src/
       chat/
         pipeline/       # ChatPipeline, BaseStep, step implementations
           steps/        # TopicClassification, ContextualResponse, GeneralCooking,
-                        # NonFoodResponse, RecipeCreation
-        chains/         # legacy chain runners (runTopicClassifierChain, etc.)
+                        # NonFoodResponse, RecipeCreation, RecipeUrlParsing
+        chains/         # runTopicClassifierChain (classifications: context-related,
+                        # food-related, not-food-related, create-recipe, parse-recipe-url)
         route.ts        # POST /api/chat
         service.ts      # chat service layer
       recipes/          # CRUD API routes
       auth/             # /api/auth/me
       users/            # /api/users
   components/
-    chat/               # chat UI components
+    chat/               # chat UI components (ChatContainer, ChatForm, ChatSidebar, ChatMessages)
     ui/                 # design system primitives (Button, etc.)
   services/
-    recipeService.ts    # recipe CRUD business logic
+    recipeService.ts    # recipe CRUD — ingredient upsert+dedup, dietary restrictions, nutrition
   lib/
     auth0.ts            # Auth0 client setup
     db.ts               # Prisma client singleton
   utilities/
     getCurrentUser.ts   # extracts authenticated user from request
     userSync.ts         # syncs Auth0 user into local DB on login
+    sanitizeRecipeData.ts  # sanitizes AI recipe output (fractions, type coercion, empty filtering)
     logger.ts           # Winston logger
   middleware.ts         # route protection (Auth0 session check)
   types/                # shared TypeScript types and DTOs
@@ -82,12 +84,23 @@ Steps are checked in order; the first step where `canExecute` returns true handl
 - Auth0 authentication with role-based access
 - AI chat pipeline (topic classification → contextual/general/non-food routing)
 - AI recipe creation from natural language (`RecipeCreationStep`)
+- AI recipe parsing from URLs (`RecipeUrlParsingStep`) — fetches page, strips HTML, extracts recipe or returns a user-friendly "not a recipe" message
+- `sanitizeRecipeData` utility — runs on AI output before it reaches the form; handles fraction strings, type coercion, empty filtering
+- Field-level form validation in `RecipeForm` with inline error messages per field
+- Server error translation in `POST /api/recipes` — Prisma errors → user-friendly messages with optional `fields` map
+- Ingredient unit is optional — unit field accepts measurement units, size descriptors ("medium", "clove"), or empty string for self-describing ingredients (eggs, bay leaves)
 
-## Actively In Progress
+## Next Up
 
 - Recipe modification via chat (save modified recipe as new; ADR 005)
-- Recipe parsing from URLs/pasted text
-- UI for recipe preview before saving
+- Improved logging to diagnose AI data structure issues and make the pipeline more resilient
+- Instruction grouping/sections for multi-component recipes (discussed, deferred until core UX is solid)
+
+## Known Decisions
+
+- `parse-recipe-url` and `create-recipe` are separate topic classifications — URL messages route to `RecipeUrlParsingStep`, natural language to `RecipeCreationStep`
+- Ingredient `unit` field is a free-text string (not an enum) — empty string is valid for counted ingredients
+- Recipe form validates client-side before submit; server returns `{ error, fields? }` for remaining failures
 
 ## Testing
 

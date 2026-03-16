@@ -166,13 +166,19 @@ PrepWise is built on a pipeline-based architecture that orchestrates multiple La
 - Pipeline architecture — `ChatPipeline`, `BaseStep`, step implementations
 - Topic classification, contextual, general cooking, and non-food response steps
 - AI recipe creation from natural language (`RecipeCreationStep`)
+- AI recipe parsing from URLs (`RecipeUrlParsingStep`) with graceful handling for non-recipe pages, JS-rendered pages, and fetch failures
+- `parse-recipe-url` topic classification — URL messages and natural language requests routed independently
+- `sanitizeRecipeData` utility — normalises AI output (fractions, type coercion, empty filtering) before it reaches the form
+- RecipeForm UX overhaul — inline editing, all nutrition fields, dietary restriction checkboxes, auto-calculated total time, field-level validation, inline errors
+- Server error translation — Prisma errors translated to user-friendly messages at the API route level
+- Ingredient unit field is optional — supports measurement units, size descriptors, or empty for self-describing ingredients
 
 #### 🧪 In Progress
-- Recipe modification via chat (save as new recipe with generated title)
-- Recipe parsing from URLs and pasted text
-- UI for recipe preview/editing before saving
+- Recipe modification via chat (save as new recipe with generated title; ADR 005)
 
 #### 🔲 Not Started
+- Improved pipeline/AI logging to diagnose data structure issues
+- Instruction grouping/sections for multi-component recipes
 - Invitation system (invite-only registration)
 - Memory system (Redis Stack, vector storage, conversation persistence)
 - Meal planning, grocery list generation, pantry inventory
