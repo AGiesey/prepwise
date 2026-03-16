@@ -166,7 +166,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
               {recipe.ingredients.map((ingredient, index) => (
                 <li key={index} className="flex items-center">
                   <span className="font-medium">
-                    {ingredient.quantity} {ingredient.unit} {ingredient.name}
+                    {[ingredient.quantity, ingredient.unit, ingredient.name].filter(Boolean).join(' ')}
                     {ingredient.notes && ` (${ingredient.notes})`}
                   </span>
                 </li>

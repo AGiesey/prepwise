@@ -28,9 +28,9 @@ Otherwise return a JSON object matching this exact structure:
   "totalTime": number - total time in minutes,
   "ingredients": [
     {
-      "name": "string - ingredient name",
+      "name": "string - ingredient name only, no quantities or descriptors",
       "quantity": number - amount,
-      "unit": "string - unit of measurement (e.g., 'cup', 'tbsp', 'oz', 'pieces')",
+      "unit": "string - unit of measurement OR size descriptor. Use standard units for measured ingredients (e.g., 'cup', 'tbsp', 'oz', 'g', 'ml'). Use size descriptors for counted ingredients (e.g., 'medium', 'large', 'small', 'clove', 'head', 'bunch', 'sprig'). Leave empty string for ingredients that need no descriptor (e.g., eggs, bay leaves).",
       "notes": "string - optional additional notes"
     }
   ],

@@ -289,8 +289,8 @@ export default function RecipeForm({ initialData, isEditing = false }: RecipeFor
               type="text"
               value={newIngredient.unit}
               onChange={(e) => setNewIngredient(prev => ({ ...prev, unit: e.target.value }))}
-              className="w-24 p-2 border rounded"
-              placeholder="Unit"
+              className="w-28 p-2 border rounded"
+              placeholder="Unit (optional)"
             />
             <input
               type="text"
